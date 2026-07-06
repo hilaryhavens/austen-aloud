@@ -67,7 +67,7 @@ figure.artwork figcaption { font-size: 0.9rem; color: var(--faded); margin-top: 
 footer {
   margin-top: 3.5rem; padding: 2.2rem 0 2.8rem;
   border-top: none;
-  background: url("../img/washes/sage.webp") no-repeat center top / 16rem auto;
+  background: url("../img/washes/sage.webp?v=2") no-repeat center top / 16rem auto;
   font-size: 0.9rem; color: var(--faded); text-align: center;
 }
 select, button.toggle {
@@ -94,6 +94,18 @@ button.toggle { cursor: pointer; }
 }
 #reader-nav a { margin-left: 0.8rem; }
 
+/* Standalone figures cut from the painting (wide screens only) */
+.hero-fig {
+  position: absolute; top: 0.5rem; height: calc(100% - 1rem); width: auto;
+  display: none;
+}
+.hero-fig.left { left: 0.5rem; }
+.hero-fig.right { right: 0.5rem; }
+@media (min-width: 70rem) {
+  .hero-fig { display: block; }
+  header.hero.has-figs { padding-left: 9rem; padding-right: 9rem; }
+}
+
 /* Script view */
 .cast ol { columns: 2; max-width: 30rem; }
 .stage { font-style: italic; color: var(--faded); margin: 0 0 1rem; }
@@ -105,7 +117,7 @@ button.toggle { cursor: pointer; }
 .line p { margin: 0.1rem 0 0 1.2rem; }
 
 @media print {
-  .crumbs, #reader-nav, footer, .wash-band { display: none !important; }
+  .crumbs, #reader-nav, footer, .wash-band, .hero-fig { display: none !important; }
   body { background: #fff; color: #000; }
   .speaker-tag { background: none !important; color: #000; border: 1px solid #000; }
   .line { break-inside: avoid; }

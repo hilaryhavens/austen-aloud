@@ -7,7 +7,7 @@ Run: python -m builder.make_washes
 import math
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageFilter
 
 # name: (left, top, right, bottom) as fractions of the source image
 REGIONS = {
@@ -17,6 +17,9 @@ REGIONS = {
     "sage":   (0.40, 0.42, 0.56, 0.62),  # green plaid
     "rose":   (0.74, 0.50, 0.87, 0.78),  # pink gown
 }
+# Crops taken from the dresses are blurred into pure color washes so they
+# don't read as fragments of a skirt on the page.
+BLUR = {"butter", "sage", "rose"}
 MAX_W = 640
 BUDGET = 300_000
 
@@ -50,6 +53,9 @@ def main() -> None:
         if crop.width > MAX_W:
             crop = crop.resize(
                 (MAX_W, int(crop.height * MAX_W / crop.width)), Image.LANCZOS)
+        if name in BLUR:
+            crop = crop.filter(
+                ImageFilter.GaussianBlur(radius=max(crop.size) / 14))
         rgba = crop.convert("RGBA")
         rgba.putalpha(organic_mask(*crop.size))
         out = out_dir / f"{name}.webp"
