@@ -14,8 +14,7 @@ def export_summaries(db_path: Path, out_path: Path) -> None:
         "SELECT id, label, title FROM book ORDER BY label"
     ):
         chapters = conn.execute(
-            "SELECT MAX(chapter_index) FROM speech_act WHERE book_id=?",
-            (book_id,),
+            "SELECT COUNT(*) FROM chapter WHERE book_id=?", (book_id,)
         ).fetchone()[0]
         aloud = conn.execute(
             "SELECT COALESCE(SUM(aloud_words),0) FROM book_stats "

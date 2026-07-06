@@ -41,6 +41,17 @@ def test_first_pp_speech_act(db):
     assert row[1] is None and row[2] == 1
 
 
+def test_chapter_table_lists_real_chapters(db):
+    n = db.execute(
+        "SELECT COUNT(*) FROM chapter c JOIN book b ON c.book_id=b.id "
+        "WHERE b.label='aus.001'").fetchone()[0]
+    assert n == 61
+    label = db.execute(
+        "SELECT c.label FROM chapter c JOIN book b ON c.book_id=b.id "
+        "WHERE b.label='aus.001' AND c.chapter_index=1").fetchone()[0]
+    assert label == "Chapter 1"
+
+
 def test_stats_consistent_with_words(db):
     # aloud word totals in book_stats must equal conversation_word rows
     for label in ["aus.001", "aus.005"]:
