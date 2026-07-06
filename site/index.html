@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AustenAloud — Who speaks in Jane Austen's novels</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <img src="img/regency-trio.jpg"
+         alt="Watercolor of three women in Regency dress of about 1801: one in a gold overdress and feathered bonnet, one in a green plaid gown with yellow gloves, one in a pink spencer jacket and white bonnet.">
+    <h1>AustenAloud</h1>
+    <p class="byline">Hilary Havens and Gerard Cohen-Vrignaud</p>
+    <p class="art-credit">Artwork by <a href="https://maggiest.weebly.com/">Maggie Stroud</a></p>
+    <p>Every word of dialogue in Jane Austen's six novels, attributed to its
+       speaker — explore who speaks, how much, and where, from the
+       <em>Austen Said</em> scholarly editions.</p>
+  </header>
+
+  <section>
+    <h2>Who speaks most</h2>
+    <div id="novel-cards" class="cards"><p class="status">Loading…</p></div>
+  </section>
+
+  <section>
+    <h2>Dialogue and narration</h2>
+    <div id="dialogue-share" class="chart-scroll"><p class="status">Loading…</p></div>
+  </section>
+
+  <section id="explore">
+    <h2>Explore a character</h2>
+    <p class="status" id="explore-status">Preparing the database…</p>
+    <p>
+      <label>Novel <select id="explore-novel" disabled></select></label>
+      <label>Character <select id="explore-speaker" disabled></select></label>
+    </p>
+    <div id="explore-chart" class="chart-scroll"></div>
+  </section>
+
+  <footer>
+    <p>Texts: <em>Austen Said</em> TEI editions (principal Laura Mooneyham White),
+       Center for Digital Research in the Humanities, University of
+       Nebraska–Lincoln, CC BY-NC-SA 3.0. Database architecture after
+       Terry Weymouth's AustenDBBuilder. <a href="about/">Credits &amp; data</a>.</p>
+  </footer>
+</div>
+<script src="js/charts.js"></script>
+<script src="js/explore.js"></script>
+</body>
+</html>

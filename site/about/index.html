@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About — AustenAloud</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <h1>About AustenAloud</h1>
+    <p class="byline">Hilary Havens and Gerard Cohen-Vrignaud</p>
+  </header>
+
+  <section>
+    <h2>The project</h2>
+    <p>AustenAloud presents Jane Austen's six novels with every passage of
+       dialogue attributed to its speaker, built from the TEI encodings of
+       the <em>Austen Said</em> project. It offers speech statistics for
+       each novel and, in future phases, a full reading interface with a
+       play-script view for classroom read-alouds, and a searchable
+       concordance.</p>
+  </section>
+
+  <section>
+    <h2>Credits</h2>
+    <ul>
+      <li><strong>Texts:</strong> the <em>Austen Said</em> TEI editions
+        (aus.001–aus.006), principal investigator Laura Mooneyham White,
+        Center for Digital Research in the Humanities, University of
+        Nebraska–Lincoln. Licensed
+        <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>;
+        this site and its dataset carry the same license.</li>
+      <li><strong>Database architecture:</strong> after Terry Weymouth's
+        AustenDBBuilder and AustenAloud prototypes (CC0), whose parsing of
+        speakers, conversations, and speech acts this project follows.</li>
+      <li><strong>Artwork:</strong> Regency watercolor by
+        <a href="https://maggiest.weebly.com/">Maggie Stroud</a>, used with
+        permission.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Download the data</h2>
+    <p><a href="../data/austen.sqlite" download>austen.sqlite</a> — a SQLite
+       database of all six novels: <code>book</code>, <code>speaker</code>,
+       <code>speech_act</code> (every attributed passage with chapter,
+       conversation, and speech-act indices), <code>conversation_word</code>
+       (every spoken word), and <code>book_stats</code> (per-speaker aloud /
+       not-aloud word and character counts). CC BY-NC-SA 3.0 — please cite
+       <em>Austen Said</em> and this project.</p>
+  </section>
+
+  <footer><p><a href="../">Back to AustenAloud</a></p></footer>
+</div>
+</body>
+</html>
