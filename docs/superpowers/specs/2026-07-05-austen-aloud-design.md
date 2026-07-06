@@ -89,6 +89,7 @@ Modelled on Maggie Stroud's Regency watercolor (three women in c. 1801 dress). T
 
 ## 7. Licensing, attribution & permissions
 
+- **Project credit:** the site is credited to **Hilary Havens and Gerard Cohen-Vrignaud** (in that order), shown on the homepage and About page.
 - **TEI texts:** the *Austen Said* editions (principal: Laura Mooneyham White; Center for Digital Research in the Humanities, University of Nebraska–Lincoln) are **CC BY-NC-SA 3.0**. The site and the derived `austen.sqlite` dataset therefore carry the same license, with prominent attribution on the About page and in the README. The project is non-commercial, satisfying the NC term.
 - **Terry Weymouth's repos:** CC0; credited on the About page as the database architecture and the project's foundation.
 - **Artwork:** permission granted by Maggie Stroud by email, April 14, 2021 ("you're totally welcome to use it wherever you want"); credit as **"Maggie Stroud"** with a link to https://maggiest.weebly.com/ (she noted the link is optional). Permission record: `C:\Users\hhavens1\OneDrive - University of Tennessee\Desktop\Maggie Stroud Permission.pdf`. **Follow-up promised:** send Maggie the finished project.
