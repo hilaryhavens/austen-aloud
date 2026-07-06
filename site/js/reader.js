@@ -139,7 +139,7 @@
         "WHERE bs.book_id = ? AND bs.narration = 0 ORDER BY bs.aloud_words DESC LIMIT ?",
         [book.id, SPEAKER_COLORS.length]
       ).forEach((r, i) => { colorOf[r.name] = SPEAKER_COLORS[i]; });
-      document.title = `${book.title}, ${chapters[chapter - 1].label} — AustenAloud`;
+      document.title = `${book.title}, ${chapters[chapter - 1].label} — Austen Aloud`;
       titleEl.textContent = `${book.title} — ${chapters[chapter - 1].label}`;
       statusEl.hidden = true;
       setupNav();
