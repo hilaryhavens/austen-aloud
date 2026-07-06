@@ -68,8 +68,10 @@ def _chapter_label(div) -> str:
 def normalize_speaker_ids(who: str, book: ParsedBook) -> list[str]:
     """Adapted from AustenDBBuilder SaidHandler.normalize_speaker_id.
 
-    Returns [] for the narrator; raises nothing — unknown ids are logged
-    and dropped so one bad attribute cannot lose a whole chapter.
+    Returns [] for the narrator (a real `.nar` who); raises nothing —
+    unresolvable ids are logged and attributed to a synthetic per-book
+    "Unknown" speaker (`f"{book.label}.unknown"`) so narration counts
+    can never be silently inflated by a bad or missing `who` attribute.
     """
     who = who.strip()
     if who.endswith(".nar"):
@@ -85,7 +87,7 @@ def normalize_speaker_ids(who: str, book: ParsedBook) -> list[str]:
     if book.label == "aus.001" and who == "aus.001.eli":
         return ["aus.001.eliz"]
     print(f"WARNING {book.label}: unrecognized who={who!r}, dropped")
-    return []
+    return [f"{book.label}.unknown"]
 
 
 def _walk_chapter(div, chapter_index: int, book: ParsedBook) -> None:
@@ -94,19 +96,21 @@ def _walk_chapter(div, chapter_index: int, book: ParsedBook) -> None:
     def visit(elem):
         tag = etree.QName(elem).localname
         if tag == "q":
+            prev_conv = state["cur_conv"]
             state["conv"] += 1
             state["cur_conv"] = state["conv"]
             state["ref"] = 0
             for child in elem:
                 visit(child)
-            state["cur_conv"] = None
+            state["cur_conv"] = prev_conv
             return
         if tag == "ref":
+            prev_ref = state["cur_ref"]
             state["ref"] += 1
             state["cur_ref"] = state["ref"]
             for child in elem:
                 visit(child)
-            state["cur_ref"] = None
+            state["cur_ref"] = prev_ref
             return
         if tag == "said":
             text = _clean("".join(elem.itertext()))
@@ -139,6 +143,9 @@ def parse_book(path: Path) -> ParsedBook:
     title = _clean(root.findtext(f".//{TEI}titleStmt/{TEI}title[@type='main']"))
     book = ParsedBook(label=label, title=title, source_file=path.name)
     book.speakers = _parse_speakers(root)
+    unknown_sid = f"{label}.unknown"
+    if unknown_sid not in book.speakers:
+        book.speakers[unknown_sid] = Speaker(unknown_sid, "Unknown")
     body = root.find(f"{TEI}text/{TEI}body")
     for div in body.iter(f"{TEI}div"):
         if div.get("type") != "chapter":

@@ -61,3 +61,53 @@ def test_every_act_has_text_and_valid_chapter(pp):
     for act in pp.speech_acts:
         assert act.text
         assert 1 <= act.chapter_index <= len(pp.chapters)
+
+
+def test_unresolvable_who_becomes_unknown_speaker(pp):
+    from builder.parse_tei import normalize_speaker_ids
+    assert normalize_speaker_ids("aus.001.nobody", pp) == ["aus.001.unknown"]
+    assert pp.speakers["aus.001.unknown"].name == "Unknown"
+
+
+def test_nar_still_returns_empty(pp):
+    from builder.parse_tei import normalize_speaker_ids
+    assert normalize_speaker_ids("aus.001.nar", pp) == []
+
+
+def test_nested_q_ref_state_is_stack_safe(tmp_path):
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xml:id="aus.999">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt><title type="main">Test Book</title></titleStmt>
+      <sourceDesc>
+        <listPerson>
+          <person xml:id="aus.999.x"><persName>X</persName></person>
+        </listPerson>
+      </sourceDesc>
+    </fileDesc>
+  </teiHeader>
+  <text>
+    <body>
+      <div type="chapter" n="1">
+        <head>Chapter 1</head>
+        <p>
+          <q><said who="aus.999.x">a</said><q><said who="aus.999.x">b</said></q><said who="aus.999.x">c</said></q>
+        </p>
+      </div>
+    </body>
+  </text>
+</TEI>
+"""
+    path = tmp_path / "aus.999.xml"
+    path.write_text(xml, encoding="utf-8")
+
+    from builder.parse_tei import parse_book
+    book = parse_book(path)
+    a, b, c = book.speech_acts[0], book.speech_acts[1], book.speech_acts[2]
+    assert a.text == "a"
+    assert b.text == "b"
+    assert c.text == "c"
+    assert a.conversation_index == 1
+    assert b.conversation_index == 2
+    assert c.conversation_index == 1
