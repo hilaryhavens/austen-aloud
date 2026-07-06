@@ -24,6 +24,12 @@ CREATE TABLE speaker (
     label TEXT NOT NULL,
     name TEXT NOT NULL
 );
+CREATE TABLE chapter (
+    book_id INTEGER NOT NULL REFERENCES book(id),
+    chapter_index INTEGER NOT NULL,
+    label TEXT NOT NULL,
+    PRIMARY KEY (book_id, chapter_index)
+);
 CREATE TABLE speech_act (
     id INTEGER PRIMARY KEY,
     book_id INTEGER NOT NULL REFERENCES book(id),
@@ -87,6 +93,12 @@ def _load_book(conn: sqlite3.Connection, parsed: ParsedBook) -> None:
             (book_id, sid, sp.name),
         )
         speaker_ids[sid] = cur.lastrowid
+
+    for i, label in enumerate(parsed.chapters, start=1):
+        cur.execute(
+            "INSERT INTO chapter (book_id, chapter_index, label) VALUES (?,?,?)",
+            (book_id, i, label),
+        )
 
     # stats accumulators: key None = narrator
     stats: dict[int | None, dict[str, int | set]] = {}

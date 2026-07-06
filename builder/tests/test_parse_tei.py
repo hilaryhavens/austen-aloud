@@ -111,3 +111,32 @@ def test_nested_q_ref_state_is_stack_safe(tmp_path):
     assert a.conversation_index == 1
     assert b.conversation_index == 2
     assert c.conversation_index == 1
+
+
+def test_emma_charade_content_preserved():
+    book = parse_book(TEI_DIR / "aus.005.xml")
+    verse = "My first displays the wealth and pomp of kings"
+    hits = [a for a in book.speech_acts if verse in a.text]
+    assert hits, "Emma's charade verse missing from speech acts"
+    assert all(a.chapter_index == 9 for a in hits)
+    assert any("CHARADE" in a.text for a in hits)
+    assert not any(label.startswith("CHARADE") for label in book.chapters)
+
+
+def test_chapter_text_reconstructs_from_speech_acts():
+    from lxml import etree
+    from builder.parse_tei import TEI
+    path = TEI_DIR / "aus.001.xml"
+    book = parse_book(path)
+    recon = "".join(
+        "".join(a.text.split())
+        for a in book.speech_acts if a.chapter_index == 1
+    )
+    root = etree.parse(str(path)).getroot()
+    div = [d for d in root.iter(f"{TEI}div") if d.get("type") == "chapter"][0]
+    heads = set(div.findall(f"{TEI}head"))
+    raw = "".join(
+        "".join(" ".join(e.itertext()).split())
+        for e in div if e not in heads
+    )
+    assert recon == raw
