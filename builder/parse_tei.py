@@ -65,6 +65,74 @@ def _chapter_label(div) -> str:
     return label.rstrip(".").strip()
 
 
+def normalize_speaker_ids(who: str, book: ParsedBook) -> list[str]:
+    """Adapted from AustenDBBuilder SaidHandler.normalize_speaker_id.
+
+    Returns [] for the narrator; raises nothing — unknown ids are logged
+    and dropped so one bad attribute cannot lose a whole chapter.
+    """
+    who = who.strip()
+    if who.endswith(".nar"):
+        return []
+    if "_" in who:
+        who = who.split("_", 1)[0]
+    if who in book.speakers:
+        return [who]
+    if ";" in who:
+        parts = [p.strip() for p in who.split(";")]
+        if all(p in book.speakers for p in parts):
+            return parts
+    if book.label == "aus.001" and who == "aus.001.eli":
+        return ["aus.001.eliz"]
+    print(f"WARNING {book.label}: unrecognized who={who!r}, dropped")
+    return []
+
+
+def _walk_chapter(div, chapter_index: int, book: ParsedBook) -> None:
+    state = {"conv": 0, "cur_conv": None, "ref": 0, "cur_ref": None}
+
+    def visit(elem):
+        tag = etree.QName(elem).localname
+        if tag == "q":
+            state["conv"] += 1
+            state["cur_conv"] = state["conv"]
+            state["ref"] = 0
+            for child in elem:
+                visit(child)
+            state["cur_conv"] = None
+            return
+        if tag == "ref":
+            state["ref"] += 1
+            state["cur_ref"] = state["ref"]
+            for child in elem:
+                visit(child)
+            state["cur_ref"] = None
+            return
+        if tag == "said":
+            text = _clean("".join(elem.itertext()))
+            if not text:
+                return
+            sids = normalize_speaker_ids(elem.get("who", ""), book)
+            book.speech_acts.append(SpeechAct(
+                seq=len(book.speech_acts),
+                chapter_index=chapter_index,
+                conversation_index=state["cur_conv"],
+                speech_act_index=state["cur_ref"],
+                speaker_sids=sids,
+                narration=(not sids),
+                aloud=elem.get("aloud") == "true",
+                text=text,
+            ))
+            return
+        if tag == "head":
+            return  # chapter labels handled separately
+        for child in elem:
+            visit(child)
+
+    for child in div:
+        visit(child)
+
+
 def parse_book(path: Path) -> ParsedBook:
     root = etree.parse(str(path)).getroot()
     label = root.get(XML_ID)
@@ -76,4 +144,5 @@ def parse_book(path: Path) -> ParsedBook:
         if div.get("type") != "chapter":
             continue
         book.chapters.append(_chapter_label(div))
+        _walk_chapter(div, len(book.chapters), book)
     return book
