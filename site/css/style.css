@@ -76,3 +76,20 @@ select, button.toggle {
 }
 button.toggle { cursor: pointer; }
 .status { font-style: italic; color: var(--faded); }
+
+/* Reader */
+.reader-head { padding-top: 1.5rem; }
+.crumbs { font-size: 0.85rem; color: var(--faded); }
+#chapter-body { max-width: 42rem; margin: 0 auto; }
+#chapter-body .narration { margin: 0 0 1rem; }
+#chapter-body .speech {
+  margin: 0 0 1rem; padding-left: 0.8rem;
+  border-left: 0.25rem solid var(--rule);
+}
+.speaker-tag {
+  display: inline-block; font-size: 0.78rem; letter-spacing: 0.06em;
+  font-variant: small-caps; color: var(--ink);
+  border-bottom: 0.22rem solid var(--rule);
+  margin-right: 0.35rem;
+}
+#reader-nav a { margin-left: 0.8rem; }

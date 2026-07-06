@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reading — AustenAloud</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="reader-head">
+    <p class="crumbs"><a href="../">AustenAloud</a> · <a href="index.html">Novels</a></p>
+    <h1 id="chapter-title">Loading…</h1>
+    <p class="status" id="reader-status">Preparing the book — the database
+       downloads once and is then cached by your browser.</p>
+    <p id="reader-nav">
+      <label>Chapter <select id="chapter-select" disabled></select></label>
+      <a id="prev" hidden>&larr; Previous</a>
+      <a id="next" hidden>Next &rarr;</a>
+    </p>
+  </header>
+  <main id="chapter-body"></main>
+  <footer><p><a href="index.html">All novels</a> · <a href="../about/">Credits &amp; data</a></p></footer>
+</div>
+<script src="../js/vendor/sql-wasm.js"></script>
+<script src="../js/reader.js"></script>
+</body>
+</html>
