@@ -29,5 +29,7 @@ python -m http.server 8080 --directory site
   Center for Digital Research in the Humanities, University of
   Nebraska–Lincoln — CC BY-NC-SA 3.0. This site and its derived dataset
   (`site/data/austen.sqlite`) carry the same license.
+- Research assistants Katie Haire and Ziona Kocher helped modify the
+  original *Austen Said* TEI files.
 - Database architecture after Terry Weymouth's AustenDBBuilder/AustenAloud (CC0).
 - Artwork by Maggie Stroud, used with permission.
