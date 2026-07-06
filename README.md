@@ -1,7 +1,8 @@
 # AustenAloud
 
 Who speaks in Jane Austen's six novels — an interactive site built on the
-*Austen Said* TEI editions, by Hilary Havens and Gerard Cohen-Vrignaud.
+*Austen Said* TEI editions, by Hilary Havens, Gerard Cohen-Vrignaud, and
+Terry Weymouth.
 
 The `site/` folder is a fully static website (GitHub Pages–ready, portable
 to any web server). The `builder/` folder is a Python pipeline that turns
