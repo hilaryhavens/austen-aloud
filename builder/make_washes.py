@@ -11,11 +11,11 @@ from PIL import Image
 
 # name: (left, top, right, bottom) as fractions of the source image
 REGIONS = {
-    "mist":   (0.28, 0.02, 0.44, 0.14),  # pale blue-gray background wash
+    "mist":   (0.665, 0.22, 0.745, 0.34),  # pale blue-gray background wash
     "paper":  (0.55, 0.00, 0.98, 0.06),  # warm paper-white wash
     "butter": (0.03, 0.55, 0.22, 0.82),  # yellow dress
     "sage":   (0.40, 0.42, 0.56, 0.62),  # green plaid
-    "rose":   (0.74, 0.50, 0.93, 0.78),  # pink gown
+    "rose":   (0.74, 0.50, 0.87, 0.78),  # pink gown
 }
 MAX_W = 640
 BUDGET = 300_000
