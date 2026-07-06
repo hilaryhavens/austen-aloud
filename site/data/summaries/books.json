@@ -1,0 +1,296 @@
+[
+ {
+  "label": "aus.001",
+  "title": "Pride and Prejudice",
+  "chapters": 61,
+  "aloud_words": 48481,
+  "narration_words": 64601,
+  "top_speakers": [
+   {
+    "name": "Elizabeth Bennet",
+    "aloud_words": 13904
+   },
+   {
+    "name": "Mrs. Bennet",
+    "aloud_words": 6144
+   },
+   {
+    "name": "Mr. Darcy",
+    "aloud_words": 3874
+   },
+   {
+    "name": "Jane Bennet",
+    "aloud_words": 3636
+   },
+   {
+    "name": "Mr. Collins",
+    "aloud_words": 3351
+   },
+   {
+    "name": "Mr. Bennet",
+    "aloud_words": 3224
+   },
+   {
+    "name": "Lady Catherine de Bourgh",
+    "aloud_words": 2397
+   },
+   {
+    "name": "Mr. Wickham",
+    "aloud_words": 2100
+   },
+   {
+    "name": "Lydia Bennet",
+    "aloud_words": 1923
+   },
+   {
+    "name": "Miss Bingley",
+    "aloud_words": 1841
+   }
+  ]
+ },
+ {
+  "label": "aus.002",
+  "title": "Persuasion",
+  "chapters": 24,
+  "aloud_words": 28176,
+  "narration_words": 53787,
+  "top_speakers": [
+   {
+    "name": "Anne Elliot",
+    "aloud_words": 4471
+   },
+   {
+    "name": "Mrs. Smith",
+    "aloud_words": 4071
+   },
+   {
+    "name": "Captain Wentworth",
+    "aloud_words": 3133
+   },
+   {
+    "name": "Mary Musgrove",
+    "aloud_words": 2894
+   },
+   {
+    "name": "Admiral Croft",
+    "aloud_words": 2036
+   },
+   {
+    "name": "Charles Musgrove",
+    "aloud_words": 1631
+   },
+   {
+    "name": "Sir Walter Elliot",
+    "aloud_words": 1387
+   },
+   {
+    "name": "Mrs. Musgrove",
+    "aloud_words": 1087
+   },
+   {
+    "name": "Captain Harville",
+    "aloud_words": 894
+   },
+   {
+    "name": "Mrs. Croft",
+    "aloud_words": 800
+   }
+  ]
+ },
+ {
+  "label": "aus.003",
+  "title": "Northanger Abbey",
+  "chapters": 32,
+  "aloud_words": 28765,
+  "narration_words": 47405,
+  "top_speakers": [
+   {
+    "name": "Catherine Morland",
+    "aloud_words": 7225
+   },
+   {
+    "name": "Henry Tilney",
+    "aloud_words": 6266
+   },
+   {
+    "name": "Isabella Thorpe",
+    "aloud_words": 4993
+   },
+   {
+    "name": "John Thorpe",
+    "aloud_words": 3083
+   },
+   {
+    "name": "Eleanor Tilney",
+    "aloud_words": 1999
+   },
+   {
+    "name": "Mrs. Allen",
+    "aloud_words": 1512
+   },
+   {
+    "name": "General Tilney",
+    "aloud_words": 1037
+   },
+   {
+    "name": "Mrs. Morland",
+    "aloud_words": 752
+   },
+   {
+    "name": "James Morland",
+    "aloud_words": 486
+   },
+   {
+    "name": "Mrs. Thorpe",
+    "aloud_words": 377
+   }
+  ]
+ },
+ {
+  "label": "aus.004",
+  "title": "Sense and Sensibility",
+  "chapters": 50,
+  "aloud_words": 52130,
+  "narration_words": 66678,
+  "top_speakers": [
+   {
+    "name": "Elinor Dashwood",
+    "aloud_words": 9143
+   },
+   {
+    "name": "Marianne Dashwood",
+    "aloud_words": 6266
+   },
+   {
+    "name": "Mrs. Jennings",
+    "aloud_words": 5653
+   },
+   {
+    "name": "Willoughby",
+    "aloud_words": 5241
+   },
+   {
+    "name": "John Dashwood",
+    "aloud_words": 4482
+   },
+   {
+    "name": "Colonel Brandon",
+    "aloud_words": 3807
+   },
+   {
+    "name": "Mrs. Dashwood",
+    "aloud_words": 3649
+   },
+   {
+    "name": "Lucy Steele",
+    "aloud_words": 3502
+   },
+   {
+    "name": "Edward Ferrars",
+    "aloud_words": 2416
+   },
+   {
+    "name": "Nancy Steele",
+    "aloud_words": 2103
+   }
+  ]
+ },
+ {
+  "label": "aus.005",
+  "title": "Emma",
+  "chapters": 55,
+  "aloud_words": 76976,
+  "narration_words": 78288,
+  "top_speakers": [
+   {
+    "name": "Emma Woodhouse",
+    "aloud_words": 21885
+   },
+   {
+    "name": "Mr. Knightley",
+    "aloud_words": 10310
+   },
+   {
+    "name": "Miss Bates",
+    "aloud_words": 8024
+   },
+   {
+    "name": "Mrs. Elton",
+    "aloud_words": 6193
+   },
+   {
+    "name": "Frank Churchill",
+    "aloud_words": 5360
+   },
+   {
+    "name": "Harriet Smith",
+    "aloud_words": 4915
+   },
+   {
+    "name": "Mr. Woodhouse",
+    "aloud_words": 4479
+   },
+   {
+    "name": "Mrs. Weston",
+    "aloud_words": 4393
+   },
+   {
+    "name": "Mr. Weston",
+    "aloud_words": 3234
+   },
+   {
+    "name": "Mr. Elton",
+    "aloud_words": 1747
+   }
+  ]
+ },
+ {
+  "label": "aus.006",
+  "title": "Mansfield Park",
+  "chapters": 48,
+  "aloud_words": 59187,
+  "narration_words": 95995,
+  "top_speakers": [
+   {
+    "name": "Edmund Bertram",
+    "aloud_words": 12964
+   },
+   {
+    "name": "Mary Crawford",
+    "aloud_words": 10246
+   },
+   {
+    "name": "Henry Crawford",
+    "aloud_words": 6666
+   },
+   {
+    "name": "Mrs. Norris",
+    "aloud_words": 6493
+   },
+   {
+    "name": "Fanny Price",
+    "aloud_words": 5976
+   },
+   {
+    "name": "Sir Thomas Bertram",
+    "aloud_words": 3984
+   },
+   {
+    "name": "Tom Bertram",
+    "aloud_words": 3014
+   },
+   {
+    "name": "Lady Bertram",
+    "aloud_words": 1756
+   },
+   {
+    "name": "Maria Bertram",
+    "aloud_words": 1250
+   },
+   {
+    "name": "Mrs. Grant",
+    "aloud_words": 1047
+   }
+  ]
+ }
+]
