@@ -1,0 +1,5 @@
+aus.001
+  -- search for "spirits soon rising to playfulness again" the 'hi' tag just before that
+     obviously belongs inside the narrator's 'said'
+  -- search for "when the door was shut" - this phrase belongs in
+     the narrator block before
