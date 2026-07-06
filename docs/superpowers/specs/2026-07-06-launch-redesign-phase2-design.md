@@ -46,7 +46,7 @@ Direction: the aesthetic is *adapted from* Maggie Stroud's watercolor rather tha
 
 ### 3.1 Data fixes (builder + DB rebuild)
 
-1. **Emma CHARADE heads become content.** `parse_tei.py` currently drops all `<head>` text. Chapter-label heads remain labels, but heads whose text starts with `CHARADE` (the Emma special case) are kept as narration-attributed content in `speech_act`, in document order. Regression test asserts a known charade line appears in the right Emma chapter attributed to narration.
+1. **Emma CHARADE content verified preserved.** (Amended 2026-07-06 after verification: in the TEI the charade verse and its `CHARADE.` head sit *inside* a narrator `<said>` element, so the parser already captures them; only chapter-*label* heads are dropped, correctly.) No parser change; instead a regression test asserts the known charade line ("My first displays the wealth and pomp of kings") appears in Emma chapter 9 speech acts and that no chapter label starts with `CHARADE`.
 2. **True chapter lists.** New `chapter` table: `book_id, chapter_index, label` (from the TEI `div[@type="chapter"]` structure, not inferred from speech). `export_summaries.py` reports chapter counts from this table. Test: Persuasion/P&P chapter counts match the TEI.
 3. **Chapter-fidelity test.** A builder test reconstructs one known chapter's full text from `speech_act` (narration + dialogue in order) and compares against the TEI chapter's text content (normalized whitespace), proving the reader will show the real novel.
 4. Rebuild `site/data/austen.sqlite` and summaries; existing 16 tests plus new ones pass.
