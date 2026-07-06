@@ -59,7 +59,11 @@
       : `${name} speaks no words aloud.`;
     chartHost.innerHTML = window.austenCharts.barChart(
       rows.map(r => ({ label: "Ch. " + r.chapter_index, value: r.words })),
-      { color: window.austenCharts.PALETTE[1], width: 480 }
+      {
+        color: window.austenCharts.PALETTE[1],
+        width: 480,
+        label: `${name}: words spoken aloud, by chapter`,
+      }
     );
   }
 
@@ -67,7 +71,7 @@
   speakerSel.addEventListener("change", drawChart);
 
   Promise.all([
-    initSqlJs({ locateFile: f => "js/vendor/" + f }),
+    Promise.resolve().then(() => initSqlJs({ locateFile: f => "js/vendor/" + f })),
     fetch("data/austen.sqlite").then(r => {
       if (!r.ok) throw new Error("HTTP " + r.status);
       return r.arrayBuffer();

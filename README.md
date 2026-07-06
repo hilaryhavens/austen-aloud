@@ -29,5 +29,5 @@ python -m http.server 8080 --directory site
   Center for Digital Research in the Humanities, University of
   Nebraska–Lincoln — CC BY-NC-SA 3.0. This site and its derived dataset
   (`site/data/austen.sqlite`) carry the same license.
-- Database architecture after Terry Weymouth's AustenDBBuilder (CC0).
+- Database architecture after Terry Weymouth's AustenDBBuilder/AustenAloud (CC0).
 - Artwork by Maggie Stroud, used with permission.
