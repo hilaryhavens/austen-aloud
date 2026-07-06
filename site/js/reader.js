@@ -10,6 +10,7 @@
   const params = new URLSearchParams(location.search);
   const bookLabel = params.get("book") || "";
   const chapter = Math.max(1, parseInt(params.get("ch") || "1", 10) || 1);
+  let view = params.get("view") === "script" ? "script" : "prose";
 
   const titleEl = document.getElementById("chapter-title");
   const statusEl = document.getElementById("reader-status");
@@ -17,6 +18,7 @@
   const chapterSel = document.getElementById("chapter-select");
   const prevEl = document.getElementById("prev");
   const nextEl = document.getElementById("next");
+  const toggleEl = document.getElementById("view-toggle");
 
   if (!/^aus\.00[1-6]$/.test(bookLabel)) {
     location.replace("index.html");
@@ -37,8 +39,8 @@
   function pageUrl(ch, extra) {
     const u = new URLSearchParams({ book: bookLabel, ch: String(ch) });
     if (extra) Object.entries(extra).forEach(([k, v]) => u.set(k, v));
-    // keep current view mode when navigating (script view arrives in a later task)
-    if (params.get("view") && !(extra && "view" in extra)) u.set("view", params.get("view"));
+    // keep current view mode when navigating
+    if (view === "script" && !(extra && "view" in extra)) u.set("view", "script");
     return "read.html?" + u.toString();
   }
 
@@ -67,8 +69,33 @@
     bodyEl.innerHTML = parts.join("");
   }
 
+  function renderScript() {
+    const rows = acts();
+    const counts = new Map();
+    rows.forEach(a => {
+      if (!a.narration) counts.set(a.name, (counts.get(a.name) || 0) + 1);
+    });
+    const parts = ['<section class="cast"><h2>Cast</h2><ol>'];
+    counts.forEach((n, name) => {
+      parts.push(`<li>${esc(name)} <span class="meta">(${n} ${n === 1 ? "speech" : "speeches"})</span></li>`);
+    });
+    parts.push("</ol></section>");
+    rows.forEach(a => {
+      if (a.narration) {
+        parts.push(`<p class="stage">[${esc(a.text)}]</p>`);
+      } else {
+        parts.push(
+          `<div class="line"><span class="cast-name">${esc(a.name)}</span>` +
+          `<p>${esc(a.text)}</p></div>`);
+      }
+    });
+    bodyEl.innerHTML = parts.join("");
+  }
+
   function render() {
-    renderProse();
+    if (view === "script") renderScript(); else renderProse();
+    toggleEl.textContent = view === "script" ? "Prose view" : "Script view";
+    document.body.classList.toggle("script-mode", view === "script");
   }
 
   function setupNav() {
@@ -116,6 +143,17 @@
       titleEl.textContent = `${book.title} — ${chapters[chapter - 1].label}`;
       statusEl.hidden = true;
       setupNav();
+      toggleEl.hidden = false;
+      toggleEl.addEventListener("click", () => {
+        view = view === "script" ? "prose" : "script";
+        const u = new URL(location.href);
+        if (view === "script") u.searchParams.set("view", "script");
+        else u.searchParams.delete("view");
+        history.replaceState(null, "", u);
+        if (!prevEl.hidden) prevEl.href = pageUrl(chapter - 1);
+        if (!nextEl.hidden) nextEl.href = pageUrl(chapter + 1);
+        render();
+      });
       render();
       window.austenReader = { render, acts, book: () => book, chapter: () => chapter };
     })

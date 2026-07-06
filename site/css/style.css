@@ -93,3 +93,21 @@ button.toggle { cursor: pointer; }
   margin-right: 0.35rem;
 }
 #reader-nav a { margin-left: 0.8rem; }
+
+/* Script view */
+.cast ol { columns: 2; max-width: 30rem; }
+.stage { font-style: italic; color: var(--faded); margin: 0 0 1rem; }
+.line { margin: 0 0 1.1rem; }
+.line .cast-name {
+  display: block; font-variant: small-caps; letter-spacing: 0.1em;
+  font-weight: bold;
+}
+.line p { margin: 0.1rem 0 0 1.2rem; }
+
+@media print {
+  .crumbs, #reader-nav, footer, .wash-band { display: none !important; }
+  body { background: #fff; color: #000; }
+  .speaker-tag { background: none !important; color: #000; border: 1px solid #000; }
+  .line { break-inside: avoid; }
+  #chapter-body { max-width: none; }
+}
