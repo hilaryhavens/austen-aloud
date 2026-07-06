@@ -1,4 +1,4 @@
-/* Palette drawn from Maggie Stroud's watercolor */
+/* Palette and textures adapted from Maggie Stroud's watercolor */
 :root {
   --paper: #faf6ee;
   --ink: #3d3a33;
@@ -7,8 +7,10 @@
   --green: #6fa483;
   --pink: #d98ea6;
   --blue: #8fa5bd;
-  --card: #ffffff;
+  --card: #fffdf7;
   --rule: #e4dcce;
+  --blob-a: 1.2rem 0.6rem 1.5rem 0.7rem / 0.7rem 1.4rem 0.6rem 1.3rem;
+  --blob-b: 0.6rem 1.4rem 0.7rem 1.2rem / 1.3rem 0.6rem 1.4rem 0.7rem;
 }
 * { box-sizing: border-box; }
 body {
@@ -21,14 +23,16 @@ body {
 a { color: #7d5a9e; }
 .wrap { max-width: 64rem; margin: 0 auto; padding: 0 1.25rem; }
 
-header.hero { text-align: center; padding: 2.5rem 0 1rem; }
-header.hero img {
-  max-width: min(34rem, 100%); height: auto;
-  border-radius: 0.4rem; box-shadow: 0 0.5rem 2rem rgba(61, 58, 51, 0.18);
+/* Hero: typographic on a watercolor band */
+header.hero { text-align: center; padding: 3rem 0 1.5rem; position: relative; }
+.wash-band {
+  background:
+    url("../img/washes/mist.webp") no-repeat left -4rem top -3rem / 22rem auto,
+    url("../img/washes/paper.webp") no-repeat right -5rem top 55% / 24rem auto;
 }
 header.hero h1 {
-  font-size: clamp(2.2rem, 6vw, 3.4rem);
-  font-weight: normal; letter-spacing: 0.06em; margin: 1.2rem 0 0.2rem;
+  font-size: clamp(2.4rem, 7vw, 3.8rem);
+  font-weight: normal; letter-spacing: 0.06em; margin: 0.6rem 0 0.2rem;
 }
 header.hero .byline { font-style: italic; margin: 0; }
 header.hero .art-credit { font-size: 0.85rem; color: var(--faded); }
@@ -36,26 +40,39 @@ header.hero .art-credit { font-size: 0.85rem; color: var(--faded); }
 section { margin: 2.5rem 0; }
 h2 {
   font-weight: normal; letter-spacing: 0.08em; font-variant: small-caps;
-  border-bottom: 1px solid var(--rule); padding-bottom: 0.3rem;
+  border-bottom: none; padding-bottom: 0.55rem;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="220" height="8" viewBox="0 0 220 8"><path d="M2 5 Q 30 1 58 4.5 T 114 4 T 170 5 T 218 3.5" fill="none" stroke="%236fa483" stroke-width="2.2" stroke-linecap="round" opacity="0.55"/></svg>')
+    no-repeat left bottom / 13rem 0.5rem;
 }
-.cards { display: grid; gap: 1.2rem; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); }
+.cards { display: grid; gap: 1.4rem; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); }
 .card {
   background: var(--card); border: 1px solid var(--rule);
-  border-radius: 0.4rem; padding: 1rem 1.2rem;
+  border-radius: var(--blob-a); padding: 1.1rem 1.3rem;
+  box-shadow: 0.15rem 0.25rem 0 rgba(143, 165, 189, 0.14);
 }
+.cards .card:nth-child(even) { border-radius: var(--blob-b); }
 .card h3 { margin: 0 0 0.2rem; font-weight: normal; font-size: 1.2rem; }
 .card .meta { color: var(--faded); font-size: 0.85rem; margin: 0 0 0.6rem; }
 .chart-scroll { overflow-x: auto; }
 svg text { font-family: inherit; fill: var(--ink); }
 
+figure.artwork { margin: 0; text-align: center; }
+figure.artwork img {
+  max-width: min(30rem, 100%); height: auto;
+  border-radius: var(--blob-a);
+  box-shadow: 0 0.5rem 2rem rgba(61, 58, 51, 0.18);
+}
+figure.artwork figcaption { font-size: 0.9rem; color: var(--faded); margin-top: 0.6rem; }
+
 footer {
-  margin-top: 3rem; padding: 1.5rem 0 2.5rem;
-  border-top: 1px solid var(--rule);
+  margin-top: 3.5rem; padding: 2.2rem 0 2.8rem;
+  border-top: none;
+  background: url("../img/washes/sage.webp") no-repeat center top / 16rem auto;
   font-size: 0.9rem; color: var(--faded); text-align: center;
 }
-select {
-  font: inherit; padding: 0.3rem 0.5rem; border: 1px solid var(--rule);
-  border-radius: 0.3rem; background: var(--card); color: var(--ink);
+select, button.toggle {
+  font: inherit; padding: 0.3rem 0.7rem; border: 1px solid var(--rule);
+  border-radius: var(--blob-b); background: var(--card); color: var(--ink);
 }
+button.toggle { cursor: pointer; }
 .status { font-style: italic; color: var(--faded); }
-@media print { header.hero img { max-width: 20rem; } }

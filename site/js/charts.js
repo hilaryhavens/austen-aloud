@@ -19,7 +19,7 @@ function barChart(rows, { color = PALETTE[0], width = 420, label = "Bar chart" }
     const barW = Math.round((width - labelW - 70) * r.value / max);
     parts.push(
       `<text x="${labelW - 6}" y="${y + rowH / 2 + 4}" text-anchor="end" font-size="13">${esc(r.label)}</text>`,
-      `<rect x="${labelW}" y="${y + pad}" width="${Math.max(barW, 2)}" height="${rowH - 2 * pad}" rx="3" fill="${color}"></rect>`,
+      `<rect x="${labelW}" y="${y + pad}" width="${Math.max(barW, 2)}" height="${rowH - 2 * pad}" rx="${6 + (i % 3)}" ry="${7 - (i % 2) * 2}" fill="${color}"></rect>`,
       `<text x="${labelW + Math.max(barW, 2) + 6}" y="${y + rowH / 2 + 4}" font-size="12" fill="#7a736a">${r.value.toLocaleString()}</text>`
     );
   });
@@ -64,8 +64,8 @@ function renderDialogueShare(books) {
     const pctN = total ? 100 - pctA : 0;
     parts.push(
       `<text x="${labelW - 6}" y="${y + 19}" text-anchor="end" font-size="13">${esc(b.title)}</text>`,
-      `<rect x="${labelW}" y="${y + 5}" width="${wA}" height="18" fill="${PALETTE[2]}" rx="3" stroke="#5a4a52" stroke-width="1"></rect>`,
-      `<rect x="${labelW + wA}" y="${y + 5}" width="${wN}" height="18" fill="${PALETTE[3]}" rx="3"></rect>`,
+      `<rect x="${labelW}" y="${y + 5}" width="${wA}" height="18" fill="${PALETTE[2]}" rx="7" stroke="#5a4a52" stroke-width="1"></rect>`,
+      `<rect x="${labelW + wA}" y="${y + 5}" width="${wN}" height="18" fill="${PALETTE[3]}" rx="7"></rect>`,
       `<text x="${labelW + 4}" y="${y + 18}" font-size="10" fill="#3a3530">${pctA}%</text>`,
       `<text x="${labelW + wA + 4}" y="${y + 18}" font-size="10" fill="#3a3530">${pctN}%</text>`
     );
