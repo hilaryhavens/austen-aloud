@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search — Austen Aloud</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="hero wash-band has-figs">
+    <img class="hero-fig right" src="../img/figures/gold.webp" alt="">
+    <h1>Search the novels</h1>
+    <p>Find any word or phrase across all six novels — in dialogue or
+       narration — and jump straight to it in the reader.</p>
+  </header>
+  <section>
+    <form id="search-form">
+      <p class="search-controls">
+        <label>Find <input type="search" id="search-q" placeholder="e.g. poor nerves" disabled></label>
+        <label>Novel <select id="search-book" disabled><option value="">All novels</option></select></label>
+        <label>Spoken by <select id="search-speaker" disabled><option value="">Everyone</option></select></label>
+        <button class="toggle" type="submit" id="search-go" disabled>Search</button>
+      </p>
+    </form>
+    <p class="status" id="search-status" aria-live="polite">Preparing the
+       database — it downloads once and is then cached by your browser.</p>
+    <ol id="search-results" class="results"></ol>
+  </section>
+  <footer><p><a href="../">Back to the statistics</a> ·
+    <a href="../novels/">Read the novels</a> ·
+    <a href="../about/">Credits &amp; data</a></p></footer>
+</div>
+<script src="../js/vendor/sql-wasm.js"></script>
+<script src="../js/search.js"></script>
+</body>
+</html>
