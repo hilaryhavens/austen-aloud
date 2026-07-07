@@ -4,6 +4,10 @@ Who speaks in Jane Austen's six novels — an interactive site built on the
 *Austen Said* TEI editions, by Hilary Havens, Gerard Cohen-Vrignaud, and
 Terry Weymouth.
 
+The site offers speech statistics for each novel, a chapter-by-chapter
+reading interface with a play-script view for classroom read-alouds, and a
+searchable concordance of dialogue and narration across all six novels.
+
 The `site/` folder is a fully static website (GitHub Pages–ready, portable
 to any web server). The `builder/` folder is a Python pipeline that turns
 the TEI files into `site/data/austen.sqlite` and the homepage summaries.

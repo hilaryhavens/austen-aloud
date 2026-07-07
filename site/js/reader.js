@@ -11,6 +11,7 @@
   const bookLabel = params.get("book") || "";
   const chapter = Math.max(1, parseInt(params.get("ch") || "1", 10) || 1);
   let view = params.get("view") === "script" ? "script" : "prose";
+  const foundSeq = params.get("sa");
 
   const titleEl = document.getElementById("chapter-title");
   const statusEl = document.getElementById("reader-status");
@@ -46,7 +47,7 @@
 
   function acts() {
     return q(
-      "SELECT sa.narration AS narration, sa.text AS text, s.name AS name " +
+      "SELECT sa.seq AS seq, sa.narration AS narration, sa.text AS text, s.name AS name " +
       "FROM speech_act sa LEFT JOIN speaker s ON sa.speaker_id = s.id " +
       "WHERE sa.book_id = ? AND sa.chapter_index = ? ORDER BY sa.seq",
       [book.id, chapter]
@@ -57,11 +58,11 @@
     const parts = [];
     acts().forEach(a => {
       if (a.narration) {
-        parts.push(`<p class="narration">${esc(a.text)}</p>`);
+        parts.push(`<p class="narration" id="sa-${a.seq}">${esc(a.text)}</p>`);
       } else {
         const c = colorOf[a.name] || "#7a736a";
         parts.push(
-          `<p class="speech" style="border-color:${c}">` +
+          `<p class="speech" id="sa-${a.seq}" style="border-color:${c}">` +
           `<span class="speaker-tag" style="border-color:${c}">${esc(a.name)}</span> ` +
           `${esc(a.text)}</p>`);
       }
@@ -82,10 +83,10 @@
     parts.push("</ol></section>");
     rows.forEach(a => {
       if (a.narration) {
-        parts.push(`<p class="stage">[${esc(a.text)}]</p>`);
+        parts.push(`<p class="stage" id="sa-${a.seq}">[${esc(a.text)}]</p>`);
       } else {
         parts.push(
-          `<div class="line"><span class="cast-name">${esc(a.name)}</span>` +
+          `<div class="line" id="sa-${a.seq}"><span class="cast-name">${esc(a.name)}</span>` +
           `<p>${esc(a.text)}</p></div>`);
       }
     });
@@ -96,6 +97,14 @@
     if (view === "script") renderScript(); else renderProse();
     toggleEl.textContent = view === "script" ? "Prose view" : "Script view";
     document.body.classList.toggle("script-mode", view === "script");
+  }
+
+  function markFound(scroll) {
+    if (foundSeq === null) return;
+    const el = document.getElementById("sa-" + foundSeq);
+    if (!el) return;
+    el.classList.add("found");
+    if (scroll) el.scrollIntoView({ block: "center" });
   }
 
   function setupNav() {
@@ -153,8 +162,10 @@
         if (!prevEl.hidden) prevEl.href = pageUrl(chapter - 1);
         if (!nextEl.hidden) nextEl.href = pageUrl(chapter + 1);
         render();
+        markFound(false);
       });
       render();
+      markFound(true);
       window.austenReader = { render, acts, book: () => book, chapter: () => chapter };
     })
     .catch(err => {

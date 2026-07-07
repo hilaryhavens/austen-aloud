@@ -116,6 +116,29 @@ button.toggle { cursor: pointer; }
 }
 .line p { margin: 0.1rem 0 0 1.2rem; }
 
+/* Search */
+.search-controls {
+  display: flex; flex-wrap: wrap; gap: 0.8rem 1.2rem; align-items: center;
+}
+.search-controls input[type="search"] {
+  font: inherit; padding: 0.3rem 0.7rem; border: 1px solid var(--rule);
+  border-radius: var(--blob-a); background: var(--card); color: var(--ink);
+  width: min(18rem, 100%);
+}
+ol.results { list-style: none; padding: 0; max-width: 42rem; }
+.result { margin: 0 0 1.4rem; }
+.result blockquote {
+  margin: 0; padding: 0.1rem 0 0.1rem 0.8rem;
+  border-left: 0.25rem solid var(--rule);
+}
+.result .meta { margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--faded); }
+mark {
+  background: rgba(224, 169, 63, 0.35); color: inherit; padding: 0 0.1em;
+}
+#chapter-body .found {
+  background: rgba(224, 169, 63, 0.22); border-radius: var(--blob-b);
+}
+
 @media print {
   .crumbs, #reader-nav, footer, .wash-band, .hero-fig { display: none !important; }
   body { background: #fff; color: #000; }
