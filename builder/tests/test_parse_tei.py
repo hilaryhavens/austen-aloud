@@ -140,3 +140,21 @@ def test_chapter_text_reconstructs_from_speech_acts():
         for e in div if e not in heads
     )
     assert recon == raw
+
+
+def test_speaker_demographics(pp):
+    eliz = pp.speakers["aus.001.eliz"]
+    assert eliz.sex == "female"
+    assert eliz.soc_class == "landed gentry"
+    assert eliz.marital == "unmarried"
+    assert eliz.age_cat == "out"
+    assert eliz.trait == "heroine"
+
+
+def test_speaker_demographics_missing_are_none(pp):
+    unk = pp.speakers["aus.001.unknown"]  # synthetic speaker: no personography
+    assert unk.sex is None
+    assert unk.soc_class is None
+    assert unk.marital is None
+    assert unk.age_cat is None
+    assert unk.trait is None

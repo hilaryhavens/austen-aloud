@@ -22,7 +22,13 @@ CREATE TABLE speaker (
     id INTEGER PRIMARY KEY,
     book_id INTEGER NOT NULL REFERENCES book(id),
     label TEXT NOT NULL,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    -- Austen Said personography, verbatim; NULL = unrecorded
+    sex TEXT,
+    soc_class TEXT,
+    marital TEXT,
+    age_cat TEXT,
+    trait TEXT
 );
 CREATE TABLE chapter (
     book_id INTEGER NOT NULL REFERENCES book(id),
@@ -89,8 +95,10 @@ def _load_book(conn: sqlite3.Connection, parsed: ParsedBook) -> None:
     speaker_ids: dict[str, int] = {}
     for sid, sp in parsed.speakers.items():
         cur.execute(
-            "INSERT INTO speaker (book_id, label, name) VALUES (?,?,?)",
-            (book_id, sid, sp.name),
+            "INSERT INTO speaker (book_id, label, name, sex, soc_class,"
+            " marital, age_cat, trait) VALUES (?,?,?,?,?,?,?,?)",
+            (book_id, sid, sp.name, sp.sex, sp.soc_class,
+             sp.marital, sp.age_cat, sp.trait),
         )
         speaker_ids[sid] = cur.lastrowid
 

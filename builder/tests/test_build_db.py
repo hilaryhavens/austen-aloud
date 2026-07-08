@@ -65,3 +65,12 @@ def test_stats_consistent_with_words(db):
             "JOIN book b ON cw.book_id=b.id WHERE b.label=?", (label,)
         ).fetchone()[0]
         assert stats == words > 10000
+
+
+def test_speaker_demographics_in_db(db):
+    row = db.execute(
+        "SELECT s.sex, s.soc_class, s.marital, s.age_cat, s.trait "
+        "FROM speaker s JOIN book b ON s.book_id=b.id "
+        "WHERE b.label='aus.001' AND s.label='aus.001.eliz'"
+    ).fetchone()
+    assert row == ("female", "landed gentry", "unmarried", "out", "heroine")

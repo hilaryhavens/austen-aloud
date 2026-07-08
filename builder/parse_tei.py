@@ -12,6 +12,13 @@ XML_ID = "{http://www.w3.org/XML/1998/namespace}id"
 class Speaker:
     sid: str
     name: str
+    # Austen Said personography, stored verbatim (whitespace-normalized);
+    # None when the TEI lacks the element.
+    sex: str | None = None
+    soc_class: str | None = None
+    marital: str | None = None
+    age_cat: str | None = None
+    trait: str | None = None
 
 
 @dataclass
@@ -40,6 +47,14 @@ def _clean(text: str) -> str:
     return " ".join(text.split())
 
 
+def _opt_text(person, path: str) -> str | None:
+    el = person.find(path)
+    if el is None:
+        return None
+    text = _clean(" ".join(el.itertext()))
+    return text or None
+
+
 def _parse_speakers(root) -> dict[str, Speaker]:
     speakers: dict[str, Speaker] = {}
     for person in root.iter(f"{TEI}person"):
@@ -51,7 +66,14 @@ def _parse_speakers(root) -> dict[str, Speaker]:
             name = _clean(" ".join(t for t in pers_name.itertext()))
         else:
             name = sid
-        speakers[sid] = Speaker(sid, name or sid)
+        speakers[sid] = Speaker(
+            sid, name or sid,
+            sex=_opt_text(person, f"{TEI}sex"),
+            soc_class=_opt_text(person, f"{TEI}socecStatus"),
+            marital=_opt_text(person, f"{TEI}state[@type='marital']"),
+            age_cat=_opt_text(person, f"{TEI}age"),
+            trait=_opt_text(person, f"{TEI}trait[@type='char']"),
+        )
     return speakers
 
 
@@ -145,7 +167,7 @@ def parse_book(path: Path) -> ParsedBook:
     book.speakers = _parse_speakers(root)
     unknown_sid = f"{label}.unknown"
     if unknown_sid not in book.speakers:
-        book.speakers[unknown_sid] = Speaker(unknown_sid, "Unknown")
+        book.speakers[unknown_sid] = Speaker(unknown_sid, "Unknown", sex=None, soc_class=None, marital=None, age_cat=None, trait=None)
     body = root.find(f"{TEI}text/{TEI}body")
     for div in body.iter(f"{TEI}div"):
         if div.get("type") != "chapter":
