@@ -30,6 +30,7 @@ class SpeechAct:
     speaker_sids: list[str]       # empty for narration
     narration: bool
     aloud: bool
+    in_letter: bool
     text: str
 
 
@@ -110,7 +111,9 @@ def normalize_speaker_ids(who: str, book: ParsedBook) -> list[str]:
     if ";" in who:
         parts = [p.strip() for p in who.split(";")]
         if all(p in book.speakers for p in parts):
-            return parts
+            # Filter out narrator speakers (those ending with ".nar")
+            parts = [p for p in parts if not p.endswith(".nar")]
+            return parts if parts else []
     if book.label == "aus.001" and who == "aus.001.eli":
         return ["aus.001.eliz"]
     print(f"WARNING {book.label}: unrecognized who={who!r}, dropped")
@@ -118,10 +121,16 @@ def normalize_speaker_ids(who: str, book: ParsedBook) -> list[str]:
 
 
 def _walk_chapter(div, chapter_index: int, book: ParsedBook) -> None:
-    state = {"conv": 0, "cur_conv": None, "ref": 0, "cur_ref": None}
+    state = {"conv": 0, "cur_conv": None, "ref": 0, "cur_ref": None, "letter": 0}
 
     def visit(elem):
         tag = etree.QName(elem).localname
+        if tag == "floatingText" and elem.get("type") == "letter":
+            state["letter"] += 1
+            for child in elem:
+                visit(child)
+            state["letter"] -= 1
+            return
         if tag == "q":
             prev_conv = state["cur_conv"]
             state["conv"] += 1
@@ -152,6 +161,7 @@ def _walk_chapter(div, chapter_index: int, book: ParsedBook) -> None:
                 speaker_sids=sids,
                 narration=(not sids),
                 aloud=elem.get("aloud") == "true",
+                in_letter=state["letter"] > 0,
                 text=text,
             ))
             return

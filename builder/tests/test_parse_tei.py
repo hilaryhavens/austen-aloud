@@ -165,3 +165,39 @@ def test_speaker_multivalued_age_joined(pp):
     # age states. All values are kept, "; "-joined.
     assert pp.speakers["aus.001.lyd"].age_cat == "young married; out"
     assert pp.speakers["aus.001.char"].age_cat == "young married; out"
+
+
+# <floatingText type="letter"> elements per novel, hand-verified 2026-07-08.
+LETTER_CENSUS = {"aus.001": 13, "aus.002": 3, "aus.003": 2,
+                 "aus.004": 6, "aus.005": 2, "aus.006": 9}
+
+
+def test_caroline_bingley_note_flagged(pp):
+    letter_acts = [a for a in pp.speech_acts if a.in_letter]
+    assert letter_acts, "no letter acts found in Pride and Prejudice"
+    first = letter_acts[0]
+    assert first.speaker_sids == ["aus.001.msb"]  # Caroline (Miss) Bingley
+    assert first.text.startswith('"My dear Friend')
+    assert first.aloud is False
+    assert first.chapter_index == 7
+
+
+def test_acts_outside_letters_are_not_flagged(pp):
+    assert pp.speech_acts[0].in_letter is False  # "It is a truth..."
+
+
+def test_letter_census_all_novels():
+    from lxml import etree
+    from builder.parse_tei import TEI
+    for label, expected in LETTER_CENSUS.items():
+        path = TEI_DIR / f"{label}.xml"
+        root = etree.parse(str(path)).getroot()
+        floats = [e for e in root.iter(f"{TEI}floatingText")
+                  if e.get("type") == "letter"]
+        assert len(floats) == expected, label
+        n_said = sum(
+            1 for f in floats for s in f.iter(f"{TEI}said")
+            if " ".join("".join(s.itertext()).split())
+        )
+        book = parse_book(path)
+        assert sum(a.in_letter for a in book.speech_acts) == n_said, label
