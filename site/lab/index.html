@@ -27,6 +27,14 @@
       <button type="button" role="tab" data-tab="compare" aria-selected="false">Compare</button>
     </div>
     <section id="tab-extract" role="tabpanel" aria-label="Extract">
+      <div class="lab-actions">
+        <label>Layout <select id="extract-layout">
+          <option value="prose">Prose</option>
+          <option value="script">Script</option>
+        </select></label>
+        <button type="button" class="toggle" id="extract-txt">Download .txt</button>
+        <button type="button" class="toggle" id="extract-print">Print</button>
+      </div>
       <div id="extract-body"></div>
     </section>
     <section id="tab-cloud" role="tabpanel" aria-label="Word cloud" hidden>

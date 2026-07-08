@@ -148,7 +148,98 @@
     return { read: () => sel, set: s => { sel = s; paint(); } };
   }
 
+  function downloadBlob(filename, blob) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  const downloadText = (filename, text) =>
+    downloadBlob(filename, new Blob([text], { type: "text/plain;charset=utf-8" }));
+
   /* ==== tab renderers (Tasks 4-7 replace the entries in TABS) ==== */
+
+  let extractRows = [];
+
+  function renderExtract(sel) {
+    const out = document.getElementById("extract-body");
+    busy(out, () => {
+      extractRows = actsFor(sel);
+      if (!extractRows.length) { out.innerHTML = emptyMsg(); return; }
+      const layout = document.getElementById("extract-layout").value;
+      const parts = [];
+      if (layout === "script") {
+        const counts = new Map();
+        extractRows.forEach(r => {
+          if (!r.narration) {
+            const who = r.names || "Unknown";
+            counts.set(who, (counts.get(who) || 0) + 1);
+          }
+        });
+        if (counts.size) {
+          parts.push('<section class="cast"><h2>Cast</h2><ol>');
+          counts.forEach((n, name) => parts.push(
+            "<li>" + esc(name) + ' <span class="meta">(' + n +
+            (n === 1 ? " speech" : " speeches") + ")</span></li>"));
+          parts.push("</ol></section>");
+        }
+      }
+      let lastKey = "";
+      extractRows.forEach(r => {
+        const key = r.blabel + ":" + r.ch;
+        if (key !== lastKey) {
+          parts.push('<h3 class="extract-ch">' + esc(r.title) + " — " +
+            esc(r.chlabel) + "</h3>");
+          lastKey = key;
+        }
+        const who = r.narration ? null : (r.names || "Unknown");
+        const mark = r.in_letter ? " (letter)" : "";
+        if (layout === "script") {
+          if (!who) parts.push('<p class="stage">[' + esc(r.text) + "]</p>");
+          else parts.push('<div class="line"><span class="cast-name">' +
+            esc(who + mark) + "</span><p>" + esc(r.text) + "</p></div>");
+        } else {
+          if (!who) parts.push('<p class="narration">' + esc(r.text) + "</p>");
+          else parts.push('<p class="speech"><span class="speaker-tag">' +
+            esc(who + mark) + "</span> " + esc(r.text) + "</p>");
+        }
+      });
+      out.innerHTML = parts.join("");
+    });
+  }
+
+  function extractPlainText(rows) {
+    const out = [];
+    let lastKey = "";
+    rows.forEach(r => {
+      const key = r.blabel + ":" + r.ch;
+      if (key !== lastKey) {
+        out.push("", r.title + " — " + r.chlabel, "");
+        lastKey = key;
+      }
+      const who = r.narration ? null : (r.names || "Unknown");
+      out.push(who
+        ? who.toUpperCase() + (r.in_letter ? " (LETTER)" : "") + ": " + r.text
+        : r.text);
+    });
+    return out.join("\n").trim() + "\n";
+  }
+
+  document.getElementById("extract-layout").addEventListener("change", () => {
+    if (db) refresh();
+  });
+  document.getElementById("extract-txt").addEventListener("click", () => {
+    if (db && extractRows.length) {
+      downloadText("austen-lab-extract.txt", extractPlainText(extractRows));
+    }
+  });
+  document.getElementById("extract-print").addEventListener("click", () => {
+    window.print();
+  });
 
   function renderSummary(sel) {
     const bodyId = { extract: "extract-body", cloud: "cloud-box",
@@ -163,7 +254,7 @@
     });
   }
 
-  const TABS = { extract: renderSummary, cloud: renderSummary,
+  const TABS = { extract: renderExtract, cloud: renderSummary,
     stats: renderSummary, compare: renderSummary };
 
   /* ==== URL sync + bootstrap ==== */
@@ -173,6 +264,7 @@
     const u = new URL(location.href);
     C.selectionToParams(sel, u.searchParams, "");
     u.searchParams.set("tab", activeTab);
+    u.searchParams.set("layout", document.getElementById("extract-layout").value);
     history.replaceState(null, "", u);
     document.querySelectorAll("#lab-tabs button").forEach(b =>
       b.setAttribute("aria-selected", String(b.dataset.tab === activeTab)));
@@ -201,6 +293,9 @@
       }
       const t = params.get("tab");
       if (["extract", "cloud", "stats", "compare"].includes(t)) activeTab = t;
+      if (params.get("layout") === "script") {
+        document.getElementById("extract-layout").value = "script";
+      }
       mainPanel = buildPanel(
         document.getElementById("lab-panel-main"), sel, refresh);
       document.getElementById("lab-tabs").addEventListener("click", e => {
