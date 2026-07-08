@@ -48,11 +48,16 @@ def _clean(text: str) -> str:
 
 
 def _opt_text(person, path: str) -> str | None:
-    el = person.find(path)
-    if el is None:
-        return None
-    text = _clean(" ".join(el.itertext()))
-    return text or None
+    # A person can carry the element more than once (Lydia and Charlotte
+    # each have <age>young married</age> AND <age>out</age>); keep every
+    # value, "; "-joined, per Hilary's 2026-07-08 decision — nothing from
+    # the TEI is silently dropped.
+    texts = []
+    for el in person.findall(path):
+        t = _clean(" ".join(el.itertext()))
+        if t:
+            texts.append(t)
+    return "; ".join(texts) or None
 
 
 def _parse_speakers(root) -> dict[str, Speaker]:

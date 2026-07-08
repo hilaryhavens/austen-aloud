@@ -158,3 +158,10 @@ def test_speaker_demographics_missing_are_none(pp):
     assert unk.marital is None
     assert unk.age_cat is None
     assert unk.trait is None
+
+
+def test_speaker_multivalued_age_joined(pp):
+    # Lydia and Charlotte marry during the novel; Austen Said records both
+    # age states. All values are kept, "; "-joined.
+    assert pp.speakers["aus.001.lyd"].age_cat == "young married; out"
+    assert pp.speakers["aus.001.char"].age_cat == "young married; out"
