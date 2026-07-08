@@ -241,6 +241,123 @@
     window.print();
   });
 
+  /* Whole-novel totals (denominator for percentages, spec §2.3) — cached. */
+  const novelTotals = {};
+  function totalsOf(blabel) {
+    if (!novelTotals[blabel]) {
+      const texts = q(
+        "SELECT text FROM speech_act sa JOIN book b ON sa.book_id = b.id " +
+        "WHERE b.label = ?", [blabel]).map(r => r.text);
+      novelTotals[blabel] = C.textMetrics(texts);
+    }
+    return novelTotals[blabel];
+  }
+
+  function speakerName(label) {
+    const r = q("SELECT name FROM speaker WHERE label = ? LIMIT 1", [label]);
+    return r.length ? r[0].name : label;
+  }
+
+  /* One stats row per (novel x who-unit) (spec §3.4). */
+  function unitsOf(sel) {
+    const units = [];
+    sel.books.forEach(bl => {
+      if (sel.mode === "group") {
+        sel.groups.forEach(g => units.push({
+          book: bl,
+          label: g === C.UNRECORDED ? "unrecorded" : g,
+          sel: { books: [bl], mode: "group", who: [], groupVar: sel.groupVar,
+                 groups: [g], kinds: sel.kinds },
+        }));
+      } else {
+        sel.who.filter(t => t.startsWith(bl + ".")).forEach(tok => units.push({
+          book: bl,
+          label: tok.endsWith(".nar") ? "Narrator" : speakerName(tok),
+          sel: { books: [bl], mode: "speakers", who: [tok],
+                 groupVar: sel.groupVar, groups: [], kinds: sel.kinds },
+        }));
+      }
+    });
+    return units;
+  }
+
+  function rowFrom(rows, novelTitle, whoLabel, denomWords) {
+    const m = C.textMetrics(rows.map(r => r.text));
+    const refs = new Set(), qs = new Set();
+    rows.forEach(r => {
+      if (r.ri !== null) refs.add(r.blabel + "|" + r.ch + "|" + r.ci + "|" + r.ri);
+      if (r.ci !== null) qs.add(r.blabel + "|" + r.ch + "|" + r.ci);
+    });
+    return { novel: novelTitle, who: whoLabel, words: m.total_words,
+      pct: denomWords ? 100 * m.total_words / denomWords : 0,
+      chars: m.chars, unique: m.unique_words, density: m.density,
+      avglen: m.avg_word_length, refs: refs.size, qs: qs.size };
+  }
+
+  function computeStatsRows(sel) {
+    const units = unitsOf(sel);
+    const out = [];
+    let all = [];
+    units.forEach(u => {
+      const rows = actsFor(u.sel);
+      all = all.concat(rows);
+      out.push(rowFrom(rows, titleOf(u.book), u.label,
+        totalsOf(u.book).total_words));
+    });
+    if (out.length > 1) {
+      const seen = new Set();
+      all = all.filter(r => !seen.has(r.id) && seen.add(r.id));
+      const denom = sel.books.reduce((s, bl) => s + totalsOf(bl).total_words, 0);
+      out.push(rowFrom(all, "All selected novels", "Union of the rows above", denom));
+    }
+    return out;
+  }
+
+  function statsTableHtml(rows) {
+    return '<table class="lab-table"><thead><tr>' +
+      "<th>Novel</th><th>Selection</th><th>Total words</th><th>% of novel</th>" +
+      "<th>Character count</th><th>Unique words</th>" +
+      '<th><abbr title="Unique words divided by total words — how varied the vocabulary is">Vocabulary density</abbr></th>' +
+      "<th>Average word length</th><th>Speech acts</th><th>Conversations</th>" +
+      "</tr></thead><tbody>" +
+      rows.map(r => "<tr><td>" + esc(r.novel) + "</td><td>" + esc(r.who) +
+        "</td><td>" + fmt(r.words) + "</td><td>" + r.pct.toFixed(1) +
+        "%</td><td>" + fmt(r.chars) + "</td><td>" + fmt(r.unique) +
+        "</td><td>" + r.density.toFixed(3) + "</td><td>" +
+        r.avglen.toFixed(2) + "</td><td>" + fmt(r.refs) + "</td><td>" +
+        fmt(r.qs) + "</td></tr>").join("") +
+      "</tbody></table>";
+  }
+
+  function statsCsv(rows) {
+    const cell = v => /[",\n]/.test(String(v))
+      ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
+    const head = "novel,selection,total_words,pct_of_novel,character_count," +
+      "unique_words,vocabulary_density,avg_word_length,speech_acts,conversations";
+    return [head].concat(rows.map(r =>
+      [r.novel, r.who, r.words, r.pct.toFixed(2), r.chars, r.unique,
+       r.density.toFixed(4), r.avglen.toFixed(2), r.refs, r.qs]
+        .map(cell).join(","))).join("\n") + "\n";
+  }
+
+  let lastStatsRows = [];
+
+  function renderStats(sel) {
+    const out = document.getElementById("stats-body");
+    busy(out, () => {
+      lastStatsRows = computeStatsRows(sel);
+      out.innerHTML = lastStatsRows.some(r => r.words)
+        ? statsTableHtml(lastStatsRows) : emptyMsg();
+    });
+  }
+
+  document.getElementById("stats-csv").addEventListener("click", () => {
+    if (db && lastStatsRows.length) {
+      downloadBlob("austen-lab-stats.csv",
+        new Blob([statsCsv(lastStatsRows)], { type: "text/csv;charset=utf-8" }));
+    }
+  });
+
   function renderSummary(sel) {
     const bodyId = { extract: "extract-body", cloud: "cloud-box",
       stats: "stats-body", compare: "compare-body" }[activeTab];
@@ -255,7 +372,7 @@
   }
 
   const TABS = { extract: renderExtract, cloud: renderSummary,
-    stats: renderSummary, compare: renderSummary };
+    stats: renderStats, compare: renderSummary };
 
   /* ==== URL sync + bootstrap ==== */
 
