@@ -38,6 +38,16 @@
       <div id="extract-body"></div>
     </section>
     <section id="tab-cloud" role="tabpanel" aria-label="Word cloud" hidden>
+      <div class="lab-actions">
+        <label>Mode <select id="cloud-mode">
+          <option value="all">Whole selection</option>
+          <option value="per">One speech at a time</option>
+        </select></label>
+        <label><input type="checkbox" id="cloud-common"> Show common words</label>
+        <button type="button" class="toggle" id="cloud-svg">Download SVG</button>
+        <button type="button" class="toggle" id="cloud-png">Download PNG</button>
+      </div>
+      <ol id="cloud-speeches" class="results" hidden></ol>
       <div id="cloud-box" class="cloud-box"></div>
       <div id="cloud-table" class="chart-scroll"></div>
     </section>
@@ -58,6 +68,7 @@
 </div>
 <script src="../js/vendor/sql-wasm.js"></script>
 <script src="../js/lab-core.js"></script>
+<script src="../js/lab-cloud.js"></script>
 <script src="../js/lab.js"></script>
 </body>
 </html>

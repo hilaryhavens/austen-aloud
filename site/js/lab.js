@@ -358,6 +358,83 @@
     }
   });
 
+  let cloudActs = [];
+
+  function cloudEntries(texts) {
+    const drop = !document.getElementById("cloud-common").checked;
+    const freq = C.countTokens(texts, drop);
+    return Array.from(freq.entries())
+      .sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))
+      .slice(0, 100);                       // top ~100 words (spec §3.3)
+  }
+
+  function drawCloud(entries) {
+    const box = document.getElementById("cloud-box");
+    if (!entries.length) {
+      box.innerHTML = emptyMsg();
+      document.getElementById("cloud-table").innerHTML = "";
+      return;
+    }
+    box.innerHTML = LabCloud.svgString(entries, 800, 480);
+    document.getElementById("cloud-table").innerHTML =
+      '<table class="lab-table"><thead><tr><th>Word</th><th>Count</th>' +
+      "</tr></thead><tbody>" +
+      entries.map(([w, n]) => "<tr><td>" + esc(w) + "</td><td>" + fmt(n) +
+        "</td></tr>").join("") + "</tbody></table>";
+  }
+
+  function renderCloud(sel) {
+    const box = document.getElementById("cloud-box");
+    const listEl = document.getElementById("cloud-speeches");
+    busy(box, () => {
+      const per = document.getElementById("cloud-mode").value === "per";
+      if (per) {
+        cloudActs = actsFor(sel).filter(r => !r.narration);
+        listEl.hidden = false;
+        listEl.innerHTML = cloudActs.slice(0, 400).map(r => {
+          const words = r.text.split(/\s+/).filter(Boolean);
+          return '<li><button type="button" class="toggle" data-id="' + r.id +
+            '">' + esc(r.title + ", " + r.chlabel + " — “" +
+            words.slice(0, 8).join(" ") + (words.length > 8 ? "…" : "") +
+            "” (" + words.length + " words)") + "</button></li>";
+        }).join("");
+        box.innerHTML = cloudActs.length
+          ? '<p class="status">Choose a speech above to draw its cloud.</p>'
+          : emptyMsg();
+        document.getElementById("cloud-table").innerHTML = "";
+        return;
+      }
+      listEl.hidden = true;
+      drawCloud(cloudEntries(actsFor(sel).map(r => r.text)));
+    });
+  }
+
+  document.getElementById("cloud-speeches").addEventListener("click", e => {
+    const b = e.target.closest("button[data-id]");
+    if (!b || !db) return;
+    const act = cloudActs.find(r => String(r.id) === b.dataset.id);
+    if (act) drawCloud(cloudEntries([act.text]));
+  });
+  document.getElementById("cloud-mode").addEventListener("change", () => {
+    if (db) refresh();
+  });
+  document.getElementById("cloud-common").addEventListener("change", () => {
+    if (db) refresh();
+  });
+  document.getElementById("cloud-svg").addEventListener("click", () => {
+    const svg = document.querySelector("#cloud-box svg");
+    if (!svg) return;
+    downloadBlob("austen-lab-cloud.svg", new Blob(
+      [new XMLSerializer().serializeToString(svg)],
+      { type: "image/svg+xml" }));
+  });
+  document.getElementById("cloud-png").addEventListener("click", () => {
+    const svg = document.querySelector("#cloud-box svg");
+    if (!svg) return;
+    LabCloud.pngFromSvg(svg, blob =>
+      downloadBlob("austen-lab-cloud.png", blob));
+  });
+
   function renderSummary(sel) {
     const bodyId = { extract: "extract-body", cloud: "cloud-box",
       stats: "stats-body", compare: "compare-body" }[activeTab];
@@ -371,7 +448,7 @@
     });
   }
 
-  const TABS = { extract: renderExtract, cloud: renderSummary,
+  const TABS = { extract: renderExtract, cloud: renderCloud,
     stats: renderStats, compare: renderSummary };
 
   /* ==== URL sync + bootstrap ==== */
