@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Language Lab — Austen Aloud</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="hero wash-band has-figs">
+    <img class="hero-fig right" src="../img/figures/gold.webp" alt="">
+    <h1>Language Lab</h1>
+    <p>Choose novels, characters or groups, and kinds of text — then read the
+       selection straight through, draw word clouds, table the numbers, or
+       compare two selections side by side.</p>
+  </header>
+  <section>
+    <p class="status" id="lab-status" aria-live="polite">Preparing the
+       database — it downloads once and is then cached by your browser.</p>
+    <form id="lab-panel-main" class="lab-panel"></form>
+    <div class="tabs" role="tablist" id="lab-tabs">
+      <button type="button" role="tab" data-tab="extract" aria-selected="true">Extract</button>
+      <button type="button" role="tab" data-tab="cloud" aria-selected="false">Word cloud</button>
+      <button type="button" role="tab" data-tab="stats" aria-selected="false">Statistics</button>
+      <button type="button" role="tab" data-tab="compare" aria-selected="false">Compare</button>
+    </div>
+    <section id="tab-extract" role="tabpanel" aria-label="Extract">
+      <div id="extract-body"></div>
+    </section>
+    <section id="tab-cloud" role="tabpanel" aria-label="Word cloud" hidden>
+      <div id="cloud-box" class="cloud-box"></div>
+      <div id="cloud-table" class="chart-scroll"></div>
+    </section>
+    <section id="tab-stats" role="tabpanel" aria-label="Statistics" hidden>
+      <div id="stats-body" class="chart-scroll"></div>
+    </section>
+    <section id="tab-compare" role="tabpanel" aria-label="Compare" hidden>
+      <div id="compare-body"></div>
+    </section>
+  </section>
+  <footer><p><a href="../">Back to the statistics</a> ·
+    <a href="../novels/">Read the novels</a> ·
+    <a href="../search/">Search</a> ·
+    <a href="../about/">Credits &amp; data</a></p></footer>
+</div>
+<script src="../js/vendor/sql-wasm.js"></script>
+<script src="../js/lab-core.js"></script>
+<script src="../js/lab.js"></script>
+</body>
+</html>

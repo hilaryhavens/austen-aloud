@@ -1,0 +1,220 @@
+/* Language Lab controller: DB load, selection panels, tabs, URL state. */
+"use strict";
+
+(function () {
+  const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const fmt = n => n.toLocaleString("en-US");
+  const C = window.LabCore;
+
+  const statusEl = document.getElementById("lab-status");
+  let db = null, booksList = [], mainPanel = null;
+  let activeTab = "extract";
+
+  function q(sql, p) {
+    const stmt = db.prepare(sql);
+    stmt.bind(p || []);
+    const rows = [];
+    while (stmt.step()) rows.push(stmt.getAsObject());
+    stmt.free();
+    return rows;
+  }
+
+  /* Heavy work never blocks the first paint (spec §4). */
+  function busy(el, work) {
+    el.innerHTML = '<p class="status">Counting words…</p>';
+    setTimeout(work, 30);
+  }
+
+  function emptyMsg() {
+    return '<p class="status">No matching text — select at least one novel, ' +
+      "one speaker or group, and one kind of text.</p>";
+  }
+
+  function titleOf(bl) {
+    const b = booksList.find(x => x.label === bl);
+    return b ? b.title : bl;
+  }
+
+  function speakersOf(blabel) {
+    return q(
+      "SELECT s.label AS label, s.name AS name FROM book_stats bs " +
+      "JOIN speaker s ON bs.speaker_id = s.id " +
+      "JOIN book b ON bs.book_id = b.id " +
+      "WHERE b.label = ? AND bs.narration = 0 " +
+      "AND (bs.aloud_words + bs.not_aloud_words) > 0 " +
+      "ORDER BY bs.aloud_words DESC", [blabel]);
+  }
+
+  function topSpeaker(blabel) {
+    const r = speakersOf(blabel);
+    return r.length ? r[0].label : null;
+  }
+
+  function groupValues(books, varKey) {
+    const col = C.GROUP_VARS[varKey];
+    if (!col || !books.length) return [];
+    return q(
+      "SELECT DISTINCT sp." + col + " AS v FROM speaker sp " +
+      "JOIN book b ON sp.book_id = b.id WHERE b.label IN (" +
+      books.map(() => "?").join(",") + ") ORDER BY sp." + col + " IS NULL, sp." + col,
+      books).map(r => r.v);
+  }
+
+  function actsFor(sel) {
+    const built = C.actsSql(sel);
+    return q(built.sql, built.params);
+  }
+
+  /* Build a selection panel inside `root`; returns {read, set}.
+     <details> groups collapse naturally at phone widths (spec §4). */
+  function buildPanel(root, initial, onChange) {
+    let sel = initial;
+    root.innerHTML =
+      '<details open class="lab-group"><summary>Novels</summary>' +
+      '<div class="options opt-books"></div></details>' +
+      '<details open class="lab-group"><summary>Who</summary>' +
+      '<select class="who-mode"><option value="speakers">Choose characters</option>' +
+      Object.keys(C.GROUP_LABELS).map(k =>
+        '<option value="' + k + '">Group by ' +
+        esc(C.GROUP_LABELS[k].toLowerCase()) + "</option>").join("") +
+      '</select><div class="options opt-who"></div></details>' +
+      '<details open class="lab-group"><summary>Kinds of text</summary>' +
+      '<div class="options opt-kinds"></div></details>';
+    const booksBox = root.querySelector(".opt-books");
+    const modeSel = root.querySelector(".who-mode");
+    const whoBox = root.querySelector(".opt-who");
+    const kindsBox = root.querySelector(".opt-kinds");
+
+    const check = (k, value, label, on) =>
+      '<label><input type="checkbox" data-k="' + k + '" value="' + esc(value) +
+      '"' + (on ? " checked" : "") + "> " + esc(label) + "</label>";
+
+    function paint() {
+      booksBox.innerHTML = booksList.map(b =>
+        check("book", b.label, b.title, sel.books.includes(b.label))).join("");
+      modeSel.value = sel.mode === "group" ? sel.groupVar : "speakers";
+      if (sel.mode === "group") {
+        whoBox.innerHTML = groupValues(sel.books, sel.groupVar).map(v => {
+          const tok = v === null ? C.UNRECORDED : v;
+          return check("group", tok, v === null ? "unrecorded" : v,
+            sel.groups.includes(tok));
+        }).join("");
+      } else {
+        whoBox.innerHTML = sel.books.map(bl =>
+          "<fieldset><legend>" + esc(titleOf(bl)) + "</legend>" +
+          check("who", bl + ".nar", "Narrator", sel.who.includes(bl + ".nar")) +
+          speakersOf(bl).map(s =>
+            check("who", s.label, s.name, sel.who.includes(s.label))).join("") +
+          "</fieldset>").join("");
+      }
+      kindsBox.innerHTML = [
+        ["speech", "Speech (spoken aloud)"],
+        ["narration", "Narration"],
+        ["letters", "Letters"],
+      ].map(([k, lab]) => check("kind", k, lab, sel.kinds.includes(k))).join("");
+    }
+
+    function read() {
+      const vals = k => Array.from(
+        root.querySelectorAll('input[data-k="' + k + '"]:checked'))
+        .map(i => i.value);
+      const mode = modeSel.value;
+      sel = {
+        books: vals("book"),
+        mode: mode === "speakers" ? "speakers" : "group",
+        who: vals("who"),
+        groupVar: mode === "speakers" ? sel.groupVar : mode,
+        groups: vals("group"),
+        kinds: vals("kind"),
+      };
+      return sel;
+    }
+
+    root.addEventListener("change", e => {
+      read();
+      if (e.target === modeSel && sel.mode === "group") {
+        // entering group mode: start with every group ticked
+        sel.groups = groupValues(sel.books, sel.groupVar)
+          .map(v => (v === null ? C.UNRECORDED : v));
+      }
+      if (e.target.dataset && e.target.dataset.k === "book" || e.target === modeSel) {
+        paint();
+      }
+      onChange();
+    });
+
+    paint();
+    return { read: () => sel, set: s => { sel = s; paint(); } };
+  }
+
+  /* ==== tab renderers (Tasks 4-7 replace the entries in TABS) ==== */
+
+  function renderSummary(sel) {
+    const bodyId = { extract: "extract-body", cloud: "cloud-box",
+      stats: "stats-body", compare: "compare-body" }[activeTab];
+    const out = document.getElementById(bodyId);
+    busy(out, () => {
+      const n = actsFor(sel).length;
+      out.innerHTML = n
+        ? '<p class="status">' + fmt(n) +
+          " matching passages — this view arrives in a later task.</p>"
+        : emptyMsg();
+    });
+  }
+
+  const TABS = { extract: renderSummary, cloud: renderSummary,
+    stats: renderSummary, compare: renderSummary };
+
+  /* ==== URL sync + bootstrap ==== */
+
+  function refresh() {
+    const sel = mainPanel.read();
+    const u = new URL(location.href);
+    C.selectionToParams(sel, u.searchParams, "");
+    u.searchParams.set("tab", activeTab);
+    history.replaceState(null, "", u);
+    document.querySelectorAll("#lab-tabs button").forEach(b =>
+      b.setAttribute("aria-selected", String(b.dataset.tab === activeTab)));
+    ["extract", "cloud", "stats", "compare"].forEach(t => {
+      document.getElementById("tab-" + t).hidden = t !== activeTab;
+    });
+    TABS[activeTab](sel);
+  }
+
+  Promise.all([
+    Promise.resolve().then(() => initSqlJs({ locateFile: f => "../js/vendor/" + f })),
+    fetch("../data/austen.sqlite").then(r => {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.arrayBuffer();
+    }),
+  ])
+    .then(([SQL, buf]) => {
+      db = new SQL.Database(new Uint8Array(buf));
+      booksList = q("SELECT label, title FROM book ORDER BY label");
+      const params = new URLSearchParams(location.search);
+      const sel = C.selectionFromParams(params, "");
+      if (sel.who === null) {
+        // first visit: preselect the first novel's busiest speaker
+        const top = sel.books.length ? topSpeaker(sel.books[0]) : null;
+        sel.who = top ? [top] : [];
+      }
+      const t = params.get("tab");
+      if (["extract", "cloud", "stats", "compare"].includes(t)) activeTab = t;
+      mainPanel = buildPanel(
+        document.getElementById("lab-panel-main"), sel, refresh);
+      document.getElementById("lab-tabs").addEventListener("click", e => {
+        const b = e.target.closest("button[data-tab]");
+        if (!b) return;
+        activeTab = b.dataset.tab;
+        refresh();
+      });
+      statusEl.hidden = true;
+      refresh();
+      window.austenLab = { q, refresh, panel: () => mainPanel };
+    })
+    .catch(err => {
+      statusEl.textContent = "The Language Lab could not load (" +
+        err.message + "). Try the statistics home page instead.";
+    });
+})();
