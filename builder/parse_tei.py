@@ -111,9 +111,7 @@ def normalize_speaker_ids(who: str, book: ParsedBook) -> list[str]:
     if ";" in who:
         parts = [p.strip() for p in who.split(";")]
         if all(p in book.speakers for p in parts):
-            # Filter out narrator speakers (those ending with ".nar")
-            parts = [p for p in parts if not p.endswith(".nar")]
-            return parts if parts else []
+            return parts
     if book.label == "aus.001" and who == "aus.001.eli":
         return ["aus.001.eliz"]
     print(f"WARNING {book.label}: unrecognized who={who!r}, dropped")

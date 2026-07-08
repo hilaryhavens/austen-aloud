@@ -60,6 +60,7 @@ CREATE TABLE conversation_word (
     chapter_index INTEGER NOT NULL,
     conversation_index INTEGER,
     speech_act_index INTEGER,
+    aloud INTEGER NOT NULL,
     in_letter INTEGER NOT NULL DEFAULT 0,
     line_index INTEGER NOT NULL DEFAULT 0,  -- reserved; no line data in TEI
     word TEXT NOT NULL
@@ -148,14 +149,17 @@ def _load_book(conn: sqlite3.Connection, parsed: ParsedBook) -> None:
                                act.speech_act_index))
             if act.conversation_index is not None:
                 a["qs"].add((act.chapter_index, act.conversation_index))
+            # aloud=1 reproduces the pre-Phase-4 table exactly; in_letter marks
+            # letters (10 aloud acts live inside letters, so the two flags are
+            # independent).
             if (act.aloud or act.in_letter) and key is not None:
                 cur.executemany(
                     "INSERT INTO conversation_word (book_id, speaker_id,"
                     " chapter_index, conversation_index, speech_act_index,"
-                    " in_letter, word) VALUES (?,?,?,?,?,?,?)",
+                    " aloud, in_letter, word) VALUES (?,?,?,?,?,?,?,?)",
                     [(book_id, key, act.chapter_index,
                       act.conversation_index, act.speech_act_index,
-                      int(act.in_letter), w)
+                      int(act.aloud), int(act.in_letter), w)
                      for w in words],
                 )
 

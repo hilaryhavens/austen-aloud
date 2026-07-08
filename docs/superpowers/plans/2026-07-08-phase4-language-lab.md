@@ -15,7 +15,7 @@
 - **Demographics stored verbatim from the TEI** (whitespace-normalized only); missing values are NULL in the DB and shown as "unrecorded" in the UI — never silently dropped.
 - **Phase 1 numbers are frozen.** After the rebuild these must hold exactly (values verified against the shipped DB on 2026-07-08):
   - per-book `(SUM(aloud_words), SUM(not_aloud_words))` over all `book_stats` rows: aus.001 (48481, 73906), aus.002 (33747, 49861), aus.003 (31897, 45465), aus.004 (54109, 66519), aus.005 (81935, 76830), aus.006 (64197, 95895);
-  - `conversation_word` rows with `in_letter = 0`: **293,715** (today's total row count);
+  - `conversation_word` rows with `aloud = 1`: **293,715** (today's total row count, reproduced exactly — NOT `in_letter = 0`: 10 aloud acts / 77 words sit inside letters read aloud, so `conversation_word` carries BOTH flags); narrator-labeled rows stay frozen at **24** (pre-existing Phase 1 behavior via multi-speaker `who` lists);
   - `git diff` on `site/data/summaries/` after re-export: empty.
 - **Letter census:** exactly 35 `<floatingText type="letter">` across the corpus — aus.001: 13, aus.002: 3, aus.003: 2, aus.004: 6, aus.005: 2, aus.006: 9 (verified 2026-07-08).
 - **One shared tokenizer** (`LabCore.tokenize`) for unique words, density, clouds, and distinctive words — no tab may count words its own way.
@@ -121,11 +121,16 @@ Replace `_parse_speakers` with:
 
 ```python
 def _opt_text(person, path: str) -> str | None:
-    el = person.find(path)
-    if el is None:
-        return None
-    text = _clean(" ".join(el.itertext()))
-    return text or None
+    # A person can carry the element more than once (Lydia and Charlotte
+    # each have <age>young married</age> AND <age>out</age>); keep every
+    # value, "; "-joined, per Hilary's 2026-07-08 decision — nothing from
+    # the TEI is silently dropped.
+    texts = []
+    for el in person.findall(path):
+        t = _clean(" ".join(el.itertext()))
+        if t:
+            texts.append(t)
+    return "; ".join(texts) or None
 
 
 def _parse_speakers(root) -> dict[str, Speaker]:
@@ -202,11 +207,12 @@ git commit -m "feat(builder): read Austen Said speaker demographics into the spe
 - Modify: `builder/parse_tei.py` (SpeechAct, `_walk_chapter`)
 - Modify: `builder/build_db.py` (speech_act + conversation_word schema/inserts)
 - Test: `builder/tests/test_parse_tei.py`, `builder/tests/test_build_db.py` (new tests + update `test_stats_consistent_with_words`)
+- Modify: `site/js/explore.js` (query gains `AND aloud=1` so the live "words spoken aloud" chart stays byte-identical)
 - Modify: `site/data/austen.sqlite` (rebuilt), verify `site/data/summaries/` unchanged
 
 **Interfaces:**
 - Consumes: Task 1's schema.
-- Produces: `SpeechAct.in_letter: bool`; columns `speech_act.in_letter INTEGER NOT NULL` and `conversation_word.in_letter INTEGER NOT NULL DEFAULT 0`; `conversation_word` now also holds letter words (speaker-attributed only). `WHERE in_letter = 0` on `conversation_word` reproduces today's table exactly. The Lab's kind filters (Task 3) rely on `speech_act.in_letter`.
+- Produces: `SpeechAct.in_letter: bool`; columns `speech_act.in_letter INTEGER NOT NULL` and `conversation_word.aloud INTEGER NOT NULL` + `conversation_word.in_letter INTEGER NOT NULL DEFAULT 0`; `conversation_word` now also holds letter words (speaker-attributed only). `WHERE aloud = 1` on `conversation_word` reproduces today's table exactly (`in_letter = 0` would not — 10 aloud acts live inside letters, so the flags are independent); `site/js/explore.js` gains `AND aloud=1` to keep the live homepage chart byte-identical. The Lab's kind filters (Task 3) rely on `speech_act.in_letter`.
 
 - [ ] **Step 1: Write the failing parser tests**
 
@@ -273,10 +279,20 @@ def test_phase1_totals_frozen(db):
 
 
 def test_conversation_word_aloud_subset_unchanged(db):
+    # aloud=1 reproduces the pre-Phase-4 conversation_word table exactly.
+    # (in_letter=0 would NOT: 10 aloud acts / 77 words sit inside letters.)
     n = db.execute(
-        "SELECT COUNT(*) FROM conversation_word WHERE in_letter=0"
+        "SELECT COUNT(*) FROM conversation_word WHERE aloud=1"
     ).fetchone()[0]
-    assert n == 293715  # today's total conversation_word count
+    assert n == 293715
+
+
+def test_aloud_acts_inside_letters_exist(db):
+    # Letters read aloud: the reason aloud and in_letter are independent flags.
+    n = db.execute(
+        "SELECT COUNT(*) FROM speech_act WHERE aloud=1 AND in_letter=1"
+    ).fetchone()[0]
+    assert n == 10
 
 
 def test_letter_words_indexed_with_flag(db):
@@ -298,22 +314,23 @@ def test_speech_act_in_letter_column(db):
     assert row == (1, 0)
 
 
-def test_narrator_letters_not_in_conversation_word(db):
-    # conversation_word requires a speaker; narrator-read letters stay out
+def test_narrator_rows_frozen(db):
+    # 24 narrator-speaker rows existed in Phase 1 (multi-speaker who lists);
+    # letters attributed to the narrator alone must not add more.
     n = db.execute(
         "SELECT COUNT(*) FROM conversation_word cw "
         "JOIN speaker s ON cw.speaker_id=s.id WHERE s.label LIKE '%.nar'"
     ).fetchone()[0]
-    assert n == 0
+    assert n == 24
 ```
 
-And **update** the existing `test_stats_consistent_with_words` — its `words` query must become aloud-only:
+And **update** the existing `test_stats_consistent_with_words` — its `words` query must become aloud-only (strict equality kept):
 
 ```python
         words = db.execute(
             "SELECT COUNT(*) FROM conversation_word cw "
-            "JOIN book b ON cw.book_id=b.id "
-            "WHERE b.label=? AND cw.in_letter=0", (label,)
+            "JOIN book b ON cw.book_id=b.id WHERE b.label=? AND cw.aloud=1",
+            (label,)
         ).fetchone()[0]
 ```
 
@@ -368,8 +385,11 @@ In `builder/build_db.py` SCHEMA: in `speech_act`, after `aloud INTEGER NOT NULL,
 In `conversation_word`, before `word TEXT NOT NULL` add
 
 ```sql
+    aloud INTEGER NOT NULL,
     in_letter INTEGER NOT NULL DEFAULT 0,
 ```
+
+(`aloud = 1` reproduces the pre-Phase-4 table exactly; `in_letter` marks letters. Both are needed because 10 aloud acts sit inside letters read aloud.)
 
 In `_load_book`, the speech_act insert becomes:
 
@@ -391,10 +411,10 @@ And the word-index insert condition changes from *aloud only* to *aloud OR in_le
                 cur.executemany(
                     "INSERT INTO conversation_word (book_id, speaker_id,"
                     " chapter_index, conversation_index, speech_act_index,"
-                    " in_letter, word) VALUES (?,?,?,?,?,?,?)",
+                    " aloud, in_letter, word) VALUES (?,?,?,?,?,?,?,?)",
                     [(book_id, key, act.chapter_index,
                       act.conversation_index, act.speech_act_index,
-                      int(act.in_letter), w)
+                      int(act.aloud), int(act.in_letter), w)
                      for w in words],
                 )
 ```

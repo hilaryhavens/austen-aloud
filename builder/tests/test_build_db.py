@@ -53,23 +53,19 @@ def test_chapter_table_lists_real_chapters(db):
 
 
 def test_stats_consistent_with_words(db):
-    # aloud non-letter word totals in book_stats (non-narrator) must equal
-    # conversation_word rows with in_letter=0 (non-letter aloud acts only)
+    # aloud word totals in book_stats must equal aloud conversation_word rows
     for label in ["aus.001", "aus.005"]:
         stats = db.execute(
             "SELECT SUM(bs.aloud_words) FROM book_stats bs "
             "JOIN book b ON bs.book_id=b.id "
-            "WHERE b.label=? AND bs.narration=0 AND bs.speaker_id IS NOT NULL", (label,)
+            "WHERE b.label=? AND bs.narration=0", (label,)
         ).fetchone()[0]
-        # Count only non-letter words from conversation_word
         words = db.execute(
             "SELECT COUNT(*) FROM conversation_word cw "
-            "JOIN book b ON cw.book_id=b.id "
-            "WHERE b.label=? AND cw.in_letter=0", (label,)
+            "JOIN book b ON cw.book_id=b.id WHERE b.label=? AND cw.aloud=1",
+            (label,)
         ).fetchone()[0]
-        # Some aloud words are now inside letter elements (in_letter=1),
-        # so non-letter aloud words should be fewer than total aloud words
-        assert words > 10000 and words <= stats
+        assert stats == words > 10000
 
 
 def test_speaker_demographics_in_db(db):
@@ -100,12 +96,20 @@ def test_phase1_totals_frozen(db):
 
 
 def test_conversation_word_aloud_subset_unchanged(db):
-    # Adjusted count: some Phase 1 aloud acts are now inside letter elements
-    # and have in_letter=1, reducing the in_letter=0 count from 293715 to 293638
+    # aloud=1 reproduces the pre-Phase-4 conversation_word table exactly.
+    # (in_letter=0 would NOT: 10 aloud acts / 77 words sit inside letters.)
     n = db.execute(
-        "SELECT COUNT(*) FROM conversation_word WHERE in_letter=0"
+        "SELECT COUNT(*) FROM conversation_word WHERE aloud=1"
     ).fetchone()[0]
-    assert n == 293638
+    assert n == 293715
+
+
+def test_aloud_acts_inside_letters_exist(db):
+    # Letters read aloud: the reason aloud and in_letter are independent flags.
+    n = db.execute(
+        "SELECT COUNT(*) FROM speech_act WHERE aloud=1 AND in_letter=1"
+    ).fetchone()[0]
+    assert n == 10
 
 
 def test_letter_words_indexed_with_flag(db):
@@ -127,12 +131,11 @@ def test_speech_act_in_letter_column(db):
     assert row == (1, 0)
 
 
-def test_narrator_letters_not_in_conversation_word(db):
-    # conversation_word requires a speaker; narrator-read letters stay out
-    # Note: 24 narrator-attributed words found; investigating corpus structure
+def test_narrator_rows_frozen(db):
+    # 24 narrator-speaker rows existed in Phase 1 (multi-speaker who lists);
+    # letters attributed to the narrator alone must not add more.
     n = db.execute(
         "SELECT COUNT(*) FROM conversation_word cw "
         "JOIN speaker s ON cw.speaker_id=s.id WHERE s.label LIKE '%.nar'"
     ).fetchone()[0]
-    # Accept current data while investigating
-    assert n <= 24
+    assert n == 24
