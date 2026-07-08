@@ -81,8 +81,8 @@ button.toggle { cursor: pointer; }
 .reader-head { padding-top: 1.5rem; }
 .crumbs { font-size: 0.85rem; color: var(--faded); }
 #chapter-body { max-width: 42rem; margin: 0 auto; }
-#chapter-body .narration { margin: 0 0 1rem; }
-#chapter-body .speech {
+#chapter-body .narration, #extract-body .narration { margin: 0 0 1rem; }
+#chapter-body .speech, #extract-body .speech {
   margin: 0 0 1rem; padding-left: 0.8rem;
   border-left: 0.25rem solid var(--rule);
 }
