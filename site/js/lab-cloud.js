@@ -63,6 +63,10 @@
       URL.revokeObjectURL(url);
       c.toBlob(done, "image/png");
     };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      done(null);
+    };
     img.src = url;
   }
 

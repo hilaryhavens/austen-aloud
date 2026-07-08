@@ -431,8 +431,14 @@
   document.getElementById("cloud-png").addEventListener("click", () => {
     const svg = document.querySelector("#cloud-box svg");
     if (!svg) return;
-    LabCloud.pngFromSvg(svg, blob =>
-      downloadBlob("austen-lab-cloud.png", blob));
+    LabCloud.pngFromSvg(svg, blob => {
+      if (!blob) {
+        document.getElementById("cloud-box").innerHTML =
+          '<p class="status">PNG export failed — try the SVG download instead.</p>';
+        return;
+      }
+      downloadBlob("austen-lab-cloud.png", blob);
+    });
   });
 
   function renderSummary(sel) {
