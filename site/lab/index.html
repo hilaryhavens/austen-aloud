@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Language Lab — Austen Aloud</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="hero wash-band has-figs">
+    <img class="hero-fig right" src="../img/figures/gold.webp" alt="">
+    <h1>Language Lab</h1>
+    <p>Choose novels, characters or groups, and kinds of text — then read the
+       selection straight through, draw word clouds, table the numbers, or
+       compare two selections side by side.</p>
+  </header>
+  <section>
+    <p class="status" id="lab-status" aria-live="polite">Preparing the
+       database — it downloads once and is then cached by your browser.</p>
+    <form id="lab-panel-main" class="lab-panel"></form>
+    <div class="tabs" role="tablist" id="lab-tabs">
+      <button type="button" role="tab" data-tab="extract" aria-selected="true">Extract</button>
+      <button type="button" role="tab" data-tab="cloud" aria-selected="false">Word cloud</button>
+      <button type="button" role="tab" data-tab="stats" aria-selected="false">Statistics</button>
+      <button type="button" role="tab" data-tab="compare" aria-selected="false">Compare</button>
+    </div>
+    <section id="tab-extract" role="tabpanel" aria-label="Extract">
+      <div class="lab-actions">
+        <label>Layout <select id="extract-layout">
+          <option value="prose">Prose</option>
+          <option value="script">Script</option>
+        </select></label>
+        <button type="button" class="toggle" id="extract-txt">Download .txt</button>
+        <button type="button" class="toggle" id="extract-print">Print</button>
+      </div>
+      <div id="extract-body"></div>
+    </section>
+    <section id="tab-cloud" role="tabpanel" aria-label="Word cloud" hidden>
+      <div class="lab-actions">
+        <label>Mode <select id="cloud-mode">
+          <option value="all">Whole selection</option>
+          <option value="per">One speech at a time</option>
+        </select></label>
+        <label><input type="checkbox" id="cloud-common"> Show common words</label>
+        <button type="button" class="toggle" id="cloud-svg">Download SVG</button>
+        <button type="button" class="toggle" id="cloud-png">Download PNG</button>
+      </div>
+      <ol id="cloud-speeches" class="results" hidden></ol>
+      <div id="cloud-box" class="cloud-box"></div>
+      <div id="cloud-table" class="chart-scroll"></div>
+    </section>
+    <section id="tab-stats" role="tabpanel" aria-label="Statistics" hidden>
+      <div class="lab-actions">
+        <button type="button" class="toggle" id="stats-csv">Download CSV</button>
+      </div>
+      <div id="stats-body" class="chart-scroll"></div>
+    </section>
+    <section id="tab-compare" role="tabpanel" aria-label="Compare" hidden>
+      <div class="compare-slots">
+        <div><h3>Selection A</h3><form id="lab-panel-a" class="lab-panel"></form></div>
+        <div><h3>Selection B</h3><form id="lab-panel-b" class="lab-panel"></form></div>
+      </div>
+      <div class="lab-actions">
+        <button type="button" class="toggle" id="compare-go">Compare</button>
+        <button type="button" class="toggle" id="compare-csv">Download CSV</button>
+      </div>
+      <div id="compare-body"></div>
+    </section>
+  </section>
+  <footer><p><a href="../">Back to the statistics</a> ·
+    <a href="../novels/">Read the novels</a> ·
+    <a href="../search/">Search</a> ·
+    <a href="../about/">Credits &amp; data</a></p></footer>
+</div>
+<script src="../js/vendor/sql-wasm.js"></script>
+<script src="../js/lab-core.js"></script>
+<script src="../js/lab-cloud.js"></script>
+<script src="../js/lab.js"></script>
+</body>
+</html>

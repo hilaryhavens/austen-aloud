@@ -22,6 +22,14 @@
        each novel, a chapter-by-chapter reading interface with a
        play-script view for classroom read-alouds, and a searchable
        concordance of dialogue and narration across all six novels.</p>
+    <p>The Language Lab's speaker demographics (gender, class or rank,
+       marital status, age category) are the <em>Austen Said</em> editors'
+       categories, reproduced verbatim from the TEI personography; characters
+       the editors did not classify appear as &ldquo;unrecorded.&rdquo;
+       Letters are the passages the TEI marks as embedded correspondence.
+       Vocabulary density is unique words divided by total words
+       (type&ndash;token ratio) &mdash; a rough measure of how varied a
+       speaker's vocabulary is.</p>
   </section>
 
   <section>
@@ -63,11 +71,16 @@
        <code>speech_act</code> (every attributed passage with chapter,
        conversation, and speech-act indices), <code>conversation_word</code>
        (every spoken word), and <code>book_stats</code> (per-speaker aloud /
-       not-aloud word and character counts). CC BY-NC-SA 3.0 — please cite
+       not-aloud word and character counts). The <code>speaker</code> table carries the
+       <em>Austen Said</em> demographic fields (<code>sex</code>,
+       <code>soc_class</code>, <code>marital</code>, <code>age_cat</code>,
+       <code>trait</code>), and <code>speech_act</code> /
+       <code>conversation_word</code> flag letter text with
+       <code>in_letter</code>. CC BY-NC-SA 3.0 — please cite
        <em>Austen Said</em> and this project.</p>
   </section>
 
-  <footer><p><a href="../">Back to Austen Aloud</a> · <a href="../search/">Search the novels</a></p></footer>
+  <footer><p><a href="../">Back to Austen Aloud</a> · <a href="../search/">Search the novels</a> · <a href="../lab/">Language Lab</a></p></footer>
 </div>
 </body>
 </html>

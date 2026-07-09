@@ -49,7 +49,7 @@
   function drawChart() {
     const rows = q(
       "SELECT chapter_index, COUNT(*) AS words FROM conversation_word " +
-      "WHERE book_id=? AND speaker_id=? GROUP BY chapter_index " +
+      "WHERE book_id=? AND speaker_id=? AND aloud=1 GROUP BY chapter_index " +
       "ORDER BY chapter_index",
       [novelSel.value, speakerSel.value]
     );

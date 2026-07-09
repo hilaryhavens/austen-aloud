@@ -81,8 +81,8 @@ button.toggle { cursor: pointer; }
 .reader-head { padding-top: 1.5rem; }
 .crumbs { font-size: 0.85rem; color: var(--faded); }
 #chapter-body { max-width: 42rem; margin: 0 auto; }
-#chapter-body .narration { margin: 0 0 1rem; }
-#chapter-body .speech {
+#chapter-body .narration, #extract-body .narration { margin: 0 0 1rem; }
+#chapter-body .speech, #extract-body .speech {
   margin: 0 0 1rem; padding-left: 0.8rem;
   border-left: 0.25rem solid var(--rule);
 }
@@ -145,4 +145,61 @@ mark {
   .speaker-tag { background: none !important; color: #000; border: 1px solid #000; }
   .line { break-inside: avoid; }
   #chapter-body { max-width: none; }
+}
+
+/* ---- Language Lab ---- */
+.lab-panel {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  margin: 1rem 0;
+}
+.lab-group {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 0.5rem 0.8rem;
+  background: var(--card);
+}
+.lab-group summary { font-weight: bold; cursor: pointer; }
+.lab-group .options { max-height: 14rem; overflow-y: auto; margin-top: 0.4rem; }
+.lab-group .options label { display: block; margin: 0.15rem 0; }
+.lab-group fieldset { border: none; padding: 0; margin: 0 0 0.5rem; }
+.lab-group legend { font-style: italic; color: var(--faded); }
+.lab-group .who-mode { margin-top: 0.4rem; max-width: 100%; }
+.tabs {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--rule);
+  margin: 1rem 0 0.8rem;
+}
+.tabs button {
+  border: 1px solid var(--rule);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: none;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  font: inherit;
+}
+.tabs button[aria-selected="true"] { background: var(--card); font-weight: bold; }
+.lab-actions { margin: 0.6rem 0 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.extract-ch { margin: 1.4rem 0 0.6rem; font-variant: small-caps; }
+.lab-table { border-collapse: collapse; width: 100%; }
+.lab-table th, .lab-table td {
+  padding: 0.3rem 0.6rem;
+  border-bottom: 1px solid var(--rule);
+  text-align: right;
+}
+.lab-table th:first-child, .lab-table td:first-child,
+.lab-table th:nth-child(2), .lab-table td:nth-child(2) { text-align: left; }
+.cloud-box svg { width: 100%; height: auto; display: block; }
+.compare-slots { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; }
+.compare-slots .lab-panel { grid-template-columns: 1fr; }
+.compare-cols { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; }
+@media (max-width: 44rem) {
+  .compare-slots, .compare-cols { grid-template-columns: 1fr; }
+}
+@media print {
+  .lab-panel, .tabs, .lab-actions, #lab-status { display: none; }
 }

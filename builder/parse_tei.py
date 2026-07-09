@@ -12,6 +12,13 @@ XML_ID = "{http://www.w3.org/XML/1998/namespace}id"
 class Speaker:
     sid: str
     name: str
+    # Austen Said personography, stored verbatim (whitespace-normalized);
+    # None when the TEI lacks the element.
+    sex: str | None = None
+    soc_class: str | None = None
+    marital: str | None = None
+    age_cat: str | None = None
+    trait: str | None = None
 
 
 @dataclass
@@ -23,6 +30,7 @@ class SpeechAct:
     speaker_sids: list[str]       # empty for narration
     narration: bool
     aloud: bool
+    in_letter: bool
     text: str
 
 
@@ -40,6 +48,19 @@ def _clean(text: str) -> str:
     return " ".join(text.split())
 
 
+def _opt_text(person, path: str) -> str | None:
+    # A person can carry the element more than once (Lydia and Charlotte
+    # each have <age>young married</age> AND <age>out</age>); keep every
+    # value, "; "-joined, per Hilary's 2026-07-08 decision — nothing from
+    # the TEI is silently dropped.
+    texts = []
+    for el in person.findall(path):
+        t = _clean(" ".join(el.itertext()))
+        if t:
+            texts.append(t)
+    return "; ".join(texts) or None
+
+
 def _parse_speakers(root) -> dict[str, Speaker]:
     speakers: dict[str, Speaker] = {}
     for person in root.iter(f"{TEI}person"):
@@ -51,7 +72,14 @@ def _parse_speakers(root) -> dict[str, Speaker]:
             name = _clean(" ".join(t for t in pers_name.itertext()))
         else:
             name = sid
-        speakers[sid] = Speaker(sid, name or sid)
+        speakers[sid] = Speaker(
+            sid, name or sid,
+            sex=_opt_text(person, f"{TEI}sex"),
+            soc_class=_opt_text(person, f"{TEI}socecStatus"),
+            marital=_opt_text(person, f"{TEI}state[@type='marital']"),
+            age_cat=_opt_text(person, f"{TEI}age"),
+            trait=_opt_text(person, f"{TEI}trait[@type='char']"),
+        )
     return speakers
 
 
@@ -91,10 +119,16 @@ def normalize_speaker_ids(who: str, book: ParsedBook) -> list[str]:
 
 
 def _walk_chapter(div, chapter_index: int, book: ParsedBook) -> None:
-    state = {"conv": 0, "cur_conv": None, "ref": 0, "cur_ref": None}
+    state = {"conv": 0, "cur_conv": None, "ref": 0, "cur_ref": None, "letter": 0}
 
     def visit(elem):
         tag = etree.QName(elem).localname
+        if tag == "floatingText" and elem.get("type") == "letter":
+            state["letter"] += 1
+            for child in elem:
+                visit(child)
+            state["letter"] -= 1
+            return
         if tag == "q":
             prev_conv = state["cur_conv"]
             state["conv"] += 1
@@ -125,6 +159,7 @@ def _walk_chapter(div, chapter_index: int, book: ParsedBook) -> None:
                 speaker_sids=sids,
                 narration=(not sids),
                 aloud=elem.get("aloud") == "true",
+                in_letter=state["letter"] > 0,
                 text=text,
             ))
             return
@@ -145,7 +180,7 @@ def parse_book(path: Path) -> ParsedBook:
     book.speakers = _parse_speakers(root)
     unknown_sid = f"{label}.unknown"
     if unknown_sid not in book.speakers:
-        book.speakers[unknown_sid] = Speaker(unknown_sid, "Unknown")
+        book.speakers[unknown_sid] = Speaker(unknown_sid, "Unknown", sex=None, soc_class=None, marital=None, age_cat=None, trait=None)
     body = root.find(f"{TEI}text/{TEI}body")
     for div in body.iter(f"{TEI}div"):
         if div.get("type") != "chapter":
