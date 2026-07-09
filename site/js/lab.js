@@ -2,12 +2,22 @@
 "use strict";
 
 (function () {
-  const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-  const fmt = n => n.toLocaleString("en-US");
   const C = window.LabCore;
+  const esc = C.esc;
+  const fmt = n => n.toLocaleString("en-US");
+  /* Chapter grouping key for extract headings and plain-text export. */
+  const chKey = r => r.blabel + ":" + r.ch;
 
   const statusEl = document.getElementById("lab-status");
+  const announceEl = document.getElementById("lab-announce");
+
+  /* Screen-reader announcements. The region is permanently in the DOM
+     (visually hidden), so updates announce reliably; clearing first lets
+     the same message announce twice in a row. */
+  function announce(msg) {
+    announceEl.textContent = "";
+    setTimeout(() => { announceEl.textContent = msg; }, 50);
+  }
   let db = null, booksList = [], mainPanel = null;
   let activeTab = "extract";
 
@@ -23,7 +33,10 @@
   /* Heavy work never blocks the first paint (spec §4). */
   function busy(el, work) {
     el.innerHTML = '<p class="status">Counting words…</p>';
-    setTimeout(work, 30);
+    setTimeout(() => {
+      work();
+      announce("Results updated.");
+    }, 30);
   }
 
   function emptyMsg() {
@@ -190,7 +203,7 @@
       }
       let lastKey = "";
       extractRows.forEach(r => {
-        const key = r.blabel + ":" + r.ch;
+        const key = chKey(r);
         if (key !== lastKey) {
           parts.push('<h3 class="extract-ch">' + esc(r.title) + " — " +
             esc(r.chlabel) + "</h3>");
@@ -216,7 +229,7 @@
     const out = [];
     let lastKey = "";
     rows.forEach(r => {
-      const key = r.blabel + ":" + r.ch;
+      const key = chKey(r);
       if (key !== lastKey) {
         out.push("", r.title + " — " + r.chlabel, "");
         lastKey = key;
@@ -241,7 +254,10 @@
     window.print();
   });
 
-  /* Whole-novel totals (denominator for percentages, spec §2.3) — cached. */
+  /* Whole-novel totals (denominator for percentages, spec §2.3) — cached.
+     Deliberately EVERY speech act in the novel (all kinds: speech, narration,
+     letters), regardless of the panel's kind filter, so "% of novel" always
+     means "share of the whole book", not "share of the filtered subset". */
   const novelTotals = {};
   function totalsOf(blabel) {
     if (!novelTotals[blabel]) {
@@ -433,9 +449,10 @@
     if (!svg) return;
     LabCloud.pngFromSvg(svg, blob => {
       if (!blob) {
+        const msg = "PNG export failed — try the SVG download instead.";
         statusEl.hidden = false;
-        statusEl.textContent =
-          "PNG export failed — try the SVG download instead.";
+        statusEl.textContent = msg;
+        announce(msg);   // unhiding + setting text same-tick may not announce
         return;
       }
       downloadBlob("austen-lab-cloud.png", blob);
