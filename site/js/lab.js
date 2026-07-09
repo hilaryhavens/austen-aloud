@@ -442,21 +442,86 @@
     });
   });
 
-  function renderSummary(sel) {
-    const bodyId = { extract: "extract-body", cloud: "cloud-box",
-      stats: "stats-body", compare: "compare-body" }[activeTab];
-    const out = document.getElementById(bodyId);
+  let slotA = null, slotB = null, lastCompareRows = [];
+
+  function syncCompareUrl() {
+    const u = new URL(location.href);
+    C.selectionToParams(slotA.read(), u.searchParams, "a_");
+    C.selectionToParams(slotB.read(), u.searchParams, "b_");
+    history.replaceState(null, "", u);
+  }
+
+  /* Slots are as rich as the main panel, each with its own novel choice —
+     cross-novel character comparison is first-class (spec §3.5). */
+  function renderCompare() {
+    if (slotA) return;   // panels persist once built
+    const params = new URLSearchParams(location.search);
+    const a = C.selectionFromParams(params, "a_");
+    const b = C.selectionFromParams(params, "b_");
+    if (!params.has("b_books")) b.books = ["aus.002"];
+    if (a.who === null) a.who = [topSpeaker(a.books[0])].filter(Boolean);
+    if (b.who === null) b.who = [topSpeaker(b.books[0])].filter(Boolean);
+    slotA = buildPanel(document.getElementById("lab-panel-a"), a, syncCompareUrl);
+    slotB = buildPanel(document.getElementById("lab-panel-b"), b, syncCompareUrl);
+    syncCompareUrl();
+  }
+
+  function distinctiveHtml(d) {
+    const list = items => items.map(w =>
+      "<li>" + esc(w.word) + ' <span class="meta">(' + w.a + " vs " + w.b +
+      ")</span></li>").join("");
+    return '<h3><abbr title="Scored by log2 of the ratio of add-one-smoothed ' +
+      "relative frequencies: ((fA+1)/(NA+V)) / ((fB+1)/(NB+V)), where N is " +
+      "each selection's total words and V the combined vocabulary. Words " +
+      'used fewer than 5 times in A and B together are ignored.">' +
+      "Distinctive words</abbr></h3>" +
+      '<div class="compare-cols"><div><h4>Far more A than B</h4><ol>' +
+      list(d.a) + '</ol></div><div><h4>Far more B than A</h4><ol>' +
+      list(d.b) + "</ol></div></div>";
+  }
+
+  function runCompare() {
+    const out = document.getElementById("compare-body");
     busy(out, () => {
-      const n = actsFor(sel).length;
-      out.innerHTML = n
-        ? '<p class="status">' + fmt(n) +
-          " matching passages — this view arrives in a later task.</p>"
-        : emptyMsg();
+      const A = slotA.read(), B = slotB.read();
+      const textsA = actsFor(A).map(r => r.text);
+      const textsB = actsFor(B).map(r => r.text);
+      if (!textsA.length || !textsB.length) {
+        out.innerHTML = emptyMsg();
+        lastCompareRows = [];
+        return;
+      }
+      const rowsA = computeStatsRows(A), rowsB = computeStatsRows(B);
+      lastCompareRows = rowsA.map(r => ({ ...r, novel: "A: " + r.novel }))
+        .concat(rowsB.map(r => ({ ...r, novel: "B: " + r.novel })));
+      const freqA = C.countTokens(textsA, true);
+      const freqB = C.countTokens(textsB, true);
+      const top = f => Array.from(f.entries())
+        .sort((x, y) => y[1] - x[1] || (x[0] < y[0] ? -1 : 1)).slice(0, 100);
+      out.innerHTML =
+        '<div class="compare-cols">' +
+        '<div><h3>A</h3><div class="chart-scroll">' + statsTableHtml(rowsA) +
+        '</div><div class="cloud-box">' + LabCloud.svgString(top(freqA), 600, 380) +
+        "</div></div>" +
+        '<div><h3>B</h3><div class="chart-scroll">' + statsTableHtml(rowsB) +
+        '</div><div class="cloud-box">' + LabCloud.svgString(top(freqB), 600, 380) +
+        "</div></div></div>" +
+        distinctiveHtml(C.distinctive(freqA, freqB, 5, 15));
     });
   }
 
+  document.getElementById("compare-go").addEventListener("click", () => {
+    if (db && slotA) runCompare();
+  });
+  document.getElementById("compare-csv").addEventListener("click", () => {
+    if (db && lastCompareRows.length) {
+      downloadBlob("austen-lab-compare.csv", new Blob(
+        [statsCsv(lastCompareRows)], { type: "text/csv;charset=utf-8" }));
+    }
+  });
+
   const TABS = { extract: renderExtract, cloud: renderCloud,
-    stats: renderStats, compare: renderSummary };
+    stats: renderStats, compare: renderCompare };
 
   /* ==== URL sync + bootstrap ==== */
 
