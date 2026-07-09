@@ -433,8 +433,9 @@
     if (!svg) return;
     LabCloud.pngFromSvg(svg, blob => {
       if (!blob) {
-        document.getElementById("cloud-box").innerHTML =
-          '<p class="status">PNG export failed — try the SVG download instead.</p>';
+        statusEl.hidden = false;
+        statusEl.textContent =
+          "PNG export failed — try the SVG download instead.";
         return;
       }
       downloadBlob("austen-lab-cloud.png", blob);
