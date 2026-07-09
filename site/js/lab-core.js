@@ -3,6 +3,10 @@
 "use strict";
 
 (function () {
+  /* Shared HTML/XML escaper — also safe inside SVG text nodes. */
+  const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
   /* Shared tokenizer (spec §2.3): lowercase, split on whitespace and dashes,
      strip surrounding punctuation, keep internal apostrophes and hyphens
      ("shan't", "to-day"). EVERY tab counts words through this function. */
@@ -194,7 +198,7 @@
   }
 
   window.LabCore = {
-    tokenize, STOPWORDS, countTokens, textMetrics, distinctive,
+    esc, tokenize, STOPWORDS, countTokens, textMetrics, distinctive,
     GROUP_VARS, GROUP_LABELS, KINDS, UNRECORDED, LIST_SEP,
     kindsWhere, whoWhere, actsSql, selectionToParams, selectionFromParams,
   };

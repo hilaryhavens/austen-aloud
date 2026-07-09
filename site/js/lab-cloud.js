@@ -5,8 +5,7 @@
 (function () {
   const PALETTE = ["#7a5a3a", "#31708f", "#5a7a5f", "#7d5a9e",
                    "#a0522d", "#8a4f5f", "#4f6e8a", "#b0713f"];
-  const escXml = s => String(s).replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const escXml = window.LabCore.esc;
 
   /* Greedy Archimedean-spiral placement with box collision. Words that
      cannot fit inside the frame are skipped (rare below 100 words). */

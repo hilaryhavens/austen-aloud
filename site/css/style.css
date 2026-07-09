@@ -76,6 +76,11 @@ select, button.toggle {
 }
 button.toggle { cursor: pointer; }
 .status { font-style: italic; color: var(--faded); }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px;
+  padding: 0; border: 0; clip-path: inset(50%);
+  overflow: hidden; white-space: nowrap;
+}
 
 /* Reader */
 .reader-head { padding-top: 1.5rem; }
@@ -145,6 +150,13 @@ mark {
   .speaker-tag { background: none !important; color: #000; border: 1px solid #000; }
   .line { break-inside: avoid; }
   #chapter-body { max-width: none; }
+  /* Backgrounds rarely print — keep highlights visible in ink. */
+  mark { background: none; font-weight: bold; text-decoration: underline; }
+  #chapter-body .found {
+    /* !important: speech paragraphs carry inline speaker border-colors */
+    background: none; border: 2px solid #000 !important;
+    border-radius: 0; padding: 0.3rem 0.5rem;
+  }
 }
 
 /* ---- Language Lab ---- */

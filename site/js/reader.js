@@ -104,7 +104,12 @@
     const el = document.getElementById("sa-" + foundSeq);
     if (!el) return;
     el.classList.add("found");
-    if (scroll) el.scrollIntoView({ block: "center" });
+    if (scroll) {
+      // Move screen-reader/keyboard focus to the act the search landed on.
+      el.setAttribute("tabindex", "-1");
+      el.focus({ preventScroll: true });
+      el.scrollIntoView({ block: "center" });
+    }
   }
 
   function setupNav() {
